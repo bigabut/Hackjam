@@ -20,29 +20,70 @@ public class BodyCell : MonoBehaviour
     public bool IsHead => isHead;
     public Vector2Int GridPosition => gridPosition;
 
+    // =========================================================
+    // START
+    // =========================================================
+
     private void Start()
     {
+        if (gridManager == null)
+        {
+            gridManager =
+                FindFirstObjectByType<GridManager>();
+        }
+
         if (gridManager != null)
         {
             gridPosition =
-                gridManager.WorldToGrid(transform.position);
+                gridManager.WorldToGrid(
+                    transform.position
+                );
 
             transform.position =
-                gridManager.GridToWorld(gridPosition);
+                gridManager.GridToWorld(
+                    gridPosition
+                );
         }
 
+        SetupSides();
+    }
+
+    // =========================================================
+    // SETUP SIDES
+    // =========================================================
+
+    private void SetupSides()
+    {
         if (upSide != null)
-            upSide.Setup(this, Vector2Int.up);
+            upSide.Setup(
+                this,
+                Vector2Int.up
+            );
 
         if (downSide != null)
-            downSide.Setup(this, Vector2Int.down);
+            downSide.Setup(
+                this,
+                Vector2Int.down
+            );
 
         if (leftSide != null)
-            leftSide.Setup(this, Vector2Int.left);
+            leftSide.Setup(
+                this,
+                Vector2Int.left
+            );
 
         if (rightSide != null)
-            rightSide.Setup(this, Vector2Int.right);
+            rightSide.Setup(
+                this,
+                Vector2Int.right
+            );
+
+        HideAllSides();
     }
+
+    // =========================================================
+    // HEAD
+    // =========================================================
 
     public void SetAsHead(bool value)
     {
@@ -63,19 +104,30 @@ public class BodyCell : MonoBehaviour
         }
     }
 
+    // =========================================================
+    // GRID
+    // =========================================================
+
     public void UpdateGridPosition()
     {
         if (gridManager == null)
             return;
 
         gridPosition =
-            gridManager.WorldToGrid(transform.position);
+            gridManager.WorldToGrid(
+                transform.position
+            );
     }
 
-    public void SetGridPosition(Vector2Int position)
+    public void SetGridPosition(
+        Vector2Int position)
     {
         gridPosition = position;
     }
+
+    // =========================================================
+    // SIDE AVAILABLE
+    // =========================================================
 
     public void SetSideAvailable(
         Vector2Int direction,
@@ -86,54 +138,78 @@ public class BodyCell : MonoBehaviour
         if (direction == Vector2Int.up)
         {
             if (upSide != null)
+            {
                 upSide.SetAvailable(
                     available,
                     targetCell
                 );
+            }
         }
         else if (direction == Vector2Int.down)
         {
             if (downSide != null)
+            {
                 downSide.SetAvailable(
                     available,
                     targetCell
                 );
+            }
         }
         else if (direction == Vector2Int.left)
         {
             if (leftSide != null)
+            {
                 leftSide.SetAvailable(
                     available,
                     targetCell
                 );
+            }
         }
         else if (direction == Vector2Int.right)
         {
             if (rightSide != null)
+            {
                 rightSide.SetAvailable(
                     available,
                     targetCell
                 );
+            }
         }
     }
 
+    // =========================================================
+    // HIDE ALL SIDES
+    // =========================================================
+
     public void HideAllSides()
     {
-        if (upSide != null)
-            upSide.SetAvailable(false);
+        SetSideAvailable(
+            Vector2Int.up,
+            false,
+            null
+        );
 
-        if (downSide != null)
-            downSide.SetAvailable(false);
+        SetSideAvailable(
+            Vector2Int.down,
+            false,
+            null
+        );
 
-        if (leftSide != null)
-            leftSide.SetAvailable(false);
+        SetSideAvailable(
+            Vector2Int.left,
+            false,
+            null
+        );
 
-        if (rightSide != null)
-            rightSide.SetAvailable(false);
+        SetSideAvailable(
+            Vector2Int.right,
+            false,
+            null
+        );
     }
 
     // =========================================================
-    // ATTACHMENT
+    // REQUEST ATTACH
     // =========================================================
 
     public void RequestAttach(
@@ -142,15 +218,25 @@ public class BodyCell : MonoBehaviour
     )
     {
         if (targetCell == null)
+        {
+            Debug.LogWarning(
+                $"{name}: targetCell null."
+            );
+
             return;
+        }
 
         Debug.Log(
             $"Attach requested: " +
             $"{name} -> {targetCell.name}"
         );
 
-        // Head/body cell harus berada di dalam Player
-        Transform player = transform.parent;
+        // =====================================================
+        // CARI PLAYER
+        // =====================================================
+
+        Transform player =
+            transform.parent;
 
         if (player == null)
         {
@@ -161,10 +247,44 @@ public class BodyCell : MonoBehaviour
             return;
         }
 
-        targetCell.AttachToBody(player);
+        // =====================================================
+        // TARGET ADALAH BAGIAN DARI DETACHED BODY
+        // =====================================================
+
+        DetachedBody detachedBody =
+            targetCell.GetComponentInParent<DetachedBody>();
+
+        if (detachedBody != null)
+        {
+            Debug.Log(
+                $"Target {targetCell.name} " +
+                $"berada di DetachedBody. " +
+                $"Mengattach seluruh group."
+            );
+
+            detachedBody.AttachToPlayer(
+                player
+            );
+
+            return;
+        }
+
+        // =====================================================
+        // TARGET STANDALONE
+        // =====================================================
+
+        targetCell.AttachToBody(
+            player
+        );
     }
 
-    public void AttachToBody(Transform player)
+    // =========================================================
+    // ATTACH TO BODY
+    // =========================================================
+
+    public void AttachToBody(
+        Transform player
+    )
     {
         if (player == null)
             return;
@@ -175,20 +295,62 @@ public class BodyCell : MonoBehaviour
         if (bodyMovement == null)
         {
             Debug.LogError(
-                "Player tidak memiliki " +
-                "GridBodyMovement."
+                $"Player {player.name} " +
+                $"tidak memiliki GridBodyMovement."
             );
 
             return;
         }
 
-        // Simpan posisi grid sebelum parent berubah
-        Vector2Int gridPositionBeforeAttach =
+        if (gridManager == null)
+        {
+            gridManager =
+                FindFirstObjectByType<GridManager>();
+        }
+
+        if (gridManager == null)
+        {
+            Debug.LogError(
+                $"{name}: GridManager tidak ditemukan."
+            );
+
+            return;
+        }
+
+        // =====================================================
+        // SAFETY CHECK
+        // =====================================================
+
+        DetachedBody detachedBody =
+            GetComponentInParent<DetachedBody>();
+
+        if (detachedBody != null)
+        {
+            Debug.Log(
+                $"{name} adalah bagian dari DetachedBody. " +
+                $"Mengattach seluruh group."
+            );
+
+            detachedBody.AttachToPlayer(
+                player
+            );
+
+            return;
+        }
+
+        // =====================================================
+        // SIMPAN POSISI
+        // =====================================================
+
+        Vector2Int attachGridPosition =
             gridManager.WorldToGrid(
                 transform.position
             );
 
-        // Masukkan ke data body
+        // =====================================================
+        // REGISTER
+        // =====================================================
+
         bool registered =
             bodyMovement.RegisterAttachedCell(
                 this
@@ -197,17 +359,32 @@ public class BodyCell : MonoBehaviour
         if (!registered)
             return;
 
-        // Tetap pertahankan posisi world
+        // =====================================================
+        // PARENT
+        // =====================================================
+
         transform.SetParent(
             player,
             true
         );
 
+        // =====================================================
+        // SNAP
+        // =====================================================
+
+        transform.position =
+            gridManager.GridToWorld(
+                attachGridPosition
+            );
+
         SetGridPosition(
-            gridPositionBeforeAttach
+            attachGridPosition
         );
 
-        // Pastikan collider aktif
+        // =====================================================
+        // COLLIDER
+        // =====================================================
+
         Collider2D[] colliders =
             GetComponentsInChildren<Collider2D>(
                 true
@@ -218,8 +395,16 @@ public class BodyCell : MonoBehaviour
             collider.enabled = true;
         }
 
+        // =====================================================
+        // HIDE SIDE
+        // =====================================================
+
+        HideAllSides();
+
         Debug.Log(
-            $"{name} attached ke {player.name}"
+            $"Body Cell {name} attached ke " +
+            $"{player.name} at grid " +
+            $"{attachGridPosition}"
         );
     }
 }

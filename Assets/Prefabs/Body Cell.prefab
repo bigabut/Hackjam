@@ -284,7 +284,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!224 &6134398302829447589
 RectTransform:
   m_ObjectHideFlags: 0
@@ -410,7 +410,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fd7ceefdaa1d66e4ba697a7afa45a510, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BodyCellSide
+  sideImage: {fileID: 1664081587391629188}
   button: {fileID: 1549851504741023060}
+  hiddenAlpha: 0
+  availableAlpha: 0
+  hoverAlpha: 2
 --- !u!1 &1612205758654429296
 GameObject:
   m_ObjectHideFlags: 0
@@ -430,7 +434,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!224 &3074759696771779665
 RectTransform:
   m_ObjectHideFlags: 0
@@ -556,7 +560,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fd7ceefdaa1d66e4ba697a7afa45a510, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BodyCellSide
+  sideImage: {fileID: 6577749400469169286}
   button: {fileID: 3011285081637566563}
+  hiddenAlpha: 0
+  availableAlpha: 0
+  hoverAlpha: 2
 --- !u!1 &5106226302851461725
 GameObject:
   m_ObjectHideFlags: 0
@@ -576,7 +584,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!224 &2456805882497478321
 RectTransform:
   m_ObjectHideFlags: 0
@@ -702,7 +710,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fd7ceefdaa1d66e4ba697a7afa45a510, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BodyCellSide
+  sideImage: {fileID: 3804078050765718363}
   button: {fileID: 8988210841668949569}
+  hiddenAlpha: 0
+  availableAlpha: 0
+  hoverAlpha: 2
 --- !u!1 &7307013609116819615
 GameObject:
   m_ObjectHideFlags: 0
@@ -722,7 +734,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!224 &9199881046899701725
 RectTransform:
   m_ObjectHideFlags: 0
@@ -848,4 +860,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fd7ceefdaa1d66e4ba697a7afa45a510, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BodyCellSide
+  sideImage: {fileID: 7822286302597838177}
   button: {fileID: 9040694990902631127}
+  hiddenAlpha: 0
+  availableAlpha: 0
+  hoverAlpha: 2
