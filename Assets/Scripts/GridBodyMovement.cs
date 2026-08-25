@@ -226,6 +226,38 @@ public class GridBodyMovement : MonoBehaviour
         }
 
         // =====================================================
+        // 2.5 CEK TEMBOK / PINTU / OBSTACLE (PAKAI OVERLAP BOX)
+        // =====================================================
+        foreach (Vector2Int cell in bodyCells)
+        {
+            Vector2Int newCellPosition = newPosition + cell;
+            Vector3 worldPosToCheck = gridManager.GridToWorld(newCellPosition);
+
+            // Bikin area kotak deteksi sedikit lebih kecil dari ukuran grid asli (0.8x)
+            // Biar nggak salah deteksi tembok di kotak sebelah
+            Vector2 boxSize = new Vector2(gridManager.CellSize * 0.8f, gridManager.CellSize * 0.8f);
+
+            // Cek semua objek di dalam area kotak tersebut
+            Collider2D[] hits = Physics2D.OverlapBoxAll(worldPosToCheck, boxSize, 0f);
+
+            foreach (Collider2D hit in hits)
+            {
+                // Abaikan kalau yang ketabrak adalah diri sendiri / body-nya sendiri
+                if (hit.transform.IsChildOf(this.transform) || hit.gameObject == this.gameObject)
+                {
+                    continue; 
+                }
+
+                // Kalau nabrak collider yang solid (bukan trigger) dan bukan BodyCell
+                if (!hit.isTrigger && hit.GetComponent<BodyCell>() == null)
+                {
+                    Debug.Log($"Nabrak tembok/rintangan bernama: {hit.gameObject.name}");
+                    return; // Batalkan pergerakan!
+                }
+            }
+        }
+
+        // =====================================================
         // 3. MOVE
         // =====================================================
 
