@@ -71,6 +71,8 @@ public class GridBodyMovement : MonoBehaviour
 
     private void Update()
     {
+        if (WinManager.IsGameOver) return;
+        
         HandleInput();
         MoveBody();
     }

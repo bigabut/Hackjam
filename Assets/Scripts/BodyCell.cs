@@ -2,6 +2,13 @@ using UnityEngine;
 
 public class BodyCell : MonoBehaviour
 {
+    // Bikin daftar tipe blok
+    public enum TipeBlok { Polos, Motif, Kepala }
+
+    [Header("Tipe Jeli")]
+    [Tooltip("Pilih jeli ini jenisnya apa")]
+    public TipeBlok tipeBlok = TipeBlok.Polos;
+    
     [Header("References")]
     [SerializeField] private GridManager gridManager;
 
