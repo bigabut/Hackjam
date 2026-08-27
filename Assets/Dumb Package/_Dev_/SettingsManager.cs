@@ -3,10 +3,6 @@ using UnityEngine.UI;
 
 public class SettingsManager : MonoBehaviour
 {
-    [Header("UI Panels")]
-    [SerializeField] private GameObject _volumeSettingsPanel;
-    [SerializeField] private GameObject _controlSettingsPanel;
-
     [Header("Volume Sliders")]
     [SerializeField] private Slider _musicSlider;
     [SerializeField] private Slider _sfxSlider;
@@ -40,32 +36,6 @@ public class SettingsManager : MonoBehaviour
             _sfxSlider.onValueChanged.RemoveListener(OnSFXVolumeChanged);
         }
     }
-
-    #region Panel Navigation
-
-    public void ShowVolumeSettings()
-    {
-        if (AudioManager.Instance != null) AudioManager.Instance.PlaySFX("UI Button");
-        
-        if (_volumeSettingsPanel != null) _volumeSettingsPanel.SetActive(true);
-        if (_controlSettingsPanel != null) _controlSettingsPanel.SetActive(false);
-    }
-
-    public void ShowControlSettings()
-    {
-        if (AudioManager.Instance != null) AudioManager.Instance.PlaySFX("UI Button");
-        
-        if (_volumeSettingsPanel != null) _volumeSettingsPanel.SetActive(false);
-        if (_controlSettingsPanel != null) _controlSettingsPanel.SetActive(true);
-    }
-
-    public void CloseSettings()
-    {
-        if (AudioManager.Instance != null) AudioManager.Instance.PlaySFX("UI Button");
-        gameObject.SetActive(false);
-    }
-
-    #endregion
 
     #region Volume Controls
 

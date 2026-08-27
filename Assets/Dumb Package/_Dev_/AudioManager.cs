@@ -34,8 +34,7 @@ public class AudioManager : MonoBehaviour
     public List<SoundData> sfxList = new List<SoundData>();
     [Tooltip("Daftar audio clip untuk Musik")]
     public List<SoundData> musicList = new List<SoundData>();
-    [Tooltip("Daftar suara announcer combo (Anjay, Brainrot, Cooked, Sigma, Skibidi)")]
-    public List<SoundData> comboList = new List<SoundData>();
+    
 
     private void Awake()
     {
@@ -118,21 +117,7 @@ public class AudioManager : MonoBehaviour
         if (_loopSfxSource != null) _loopSfxSource.Stop();
     }
 
-    /// <summary>
-    /// Memutar suara Combo Announcer.
-    /// </summary>
-    public void PlayComboSFX(string name)
-    {
-        SoundData s = comboList.Find(x => x.soundName == name);
-        if (s != null)
-        {
-            sfxSource.PlayOneShot(s.clip, s.volume * _globalSFXVolume);
-        }
-        else
-        {
-            Debug.LogWarning($"[AudioManager] Combo SFX '{name}' tidak ditemukan!");
-        }
-    }
+    
 
     /// <summary>
     /// Memutar musik latar (BGM).
