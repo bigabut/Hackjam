@@ -30,6 +30,8 @@ public abstract class CuttingLine : MonoBehaviour
 
     protected virtual void Update()
     {
+        if (WinManager.IsGameOver) return;
+        
         HandleDrag();
     }
 
