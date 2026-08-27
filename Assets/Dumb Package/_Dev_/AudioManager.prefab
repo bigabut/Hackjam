@@ -1,0 +1,375 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &6550159934945524063
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 9047492061653050337}
+  - component: {fileID: 4506432707005984109}
+  - component: {fileID: 6862871127028416416}
+  - component: {fileID: 6158494613309657957}
+  m_Layer: 0
+  m_Name: AudioManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &9047492061653050337
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6550159934945524063}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 7.87862, y: 3.88348, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &4506432707005984109
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6550159934945524063}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 37735a21ada98214383e0a6a79cfbb64, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::AudioManager
+  sfxSource: {fileID: 6862871127028416416}
+  musicSource: {fileID: 6158494613309657957}
+  sfxList:
+  - soundName: TakeWeapon
+    clip: {fileID: 8300000, guid: b8afc77e2b5ca3342aebe46973d298be, type: 3}
+    volume: 1
+    loop: 0
+  - soundName: Walk
+    clip: {fileID: 8300000, guid: 1ea01d4329e25f747a5246c4209e7a19, type: 3}
+    volume: 0.7
+    loop: 1
+  - soundName: Weapon3Attack
+    clip: {fileID: 8300000, guid: 9879cb59b24b9394ebfd2135a3865118, type: 3}
+    volume: 1
+    loop: 0
+  - soundName: Weapon2Attack
+    clip: {fileID: 8300000, guid: d96cb0392eebd3543bdb84d9c83ee479, type: 3}
+    volume: 1
+    loop: 0
+  - soundName: Weapon1Attack
+    clip: {fileID: 8300000, guid: 60b402a70ccbe434b81728178d261c48, type: 3}
+    volume: 1
+    loop: 0
+  - soundName: BossHardAttack
+    clip: {fileID: 8300000, guid: b6411c69655fa914fa8e10a3cb247449, type: 3}
+    volume: 1
+    loop: 0
+  - soundName: BossMediumAttack
+    clip: {fileID: 8300000, guid: 37e5b74684eef9740a5b196d227209e1, type: 3}
+    volume: 1
+    loop: 0
+  - soundName: BossEasyAttack
+    clip: {fileID: 8300000, guid: 8c11536f87578f14a86c4ca55eba7c1e, type: 3}
+    volume: 1
+    loop: 0
+  - soundName: Enemy2Attack
+    clip: {fileID: 8300000, guid: 16ca0728c601c1e4bbe2d2ff2d712e48, type: 3}
+    volume: 1
+    loop: 0
+  - soundName: Enemy1Attack
+    clip: {fileID: 8300000, guid: 6a77a11e6fd1dc84e8e1a702f10c44a3, type: 3}
+    volume: 1
+    loop: 0
+  - soundName: Lose
+    clip: {fileID: 8300000, guid: 3288bc48654d2714ea322a39914f6736, type: 3}
+    volume: 1
+    loop: 0
+  - soundName: Win
+    clip: {fileID: 8300000, guid: 3d2f214fa8da8fd4bb42fa28ae25ae00, type: 3}
+    volume: 1
+    loop: 0
+  - soundName: UI Button
+    clip: {fileID: 8300000, guid: 914b4adb0512f3c4cabe715b8f7ff8d3, type: 3}
+    volume: 1
+    loop: 0
+  - soundName: Combo
+    clip: {fileID: 8300000, guid: 62181d811505513488f37818abaee6b8, type: 3}
+    volume: 1
+    loop: 0
+  - soundName: WaterSplash
+    clip: {fileID: 8300000, guid: c987d7425aa9191469aa90a750fe6618, type: 3}
+    volume: 1
+    loop: 0
+  - soundName: BazookaLaunch
+    clip: {fileID: 8300000, guid: e7742460d92d47d4398307c93c163c4b, type: 3}
+    volume: 1
+    loop: 0
+  - soundName: DialogOn
+    clip: {fileID: 8300000, guid: 651bd1f461eb95d4e90716a5cd1b0437, type: 3}
+    volume: 1
+    loop: 0
+  - soundName: DialogTyping
+    clip: {fileID: 8300000, guid: bcfbd4d653d0a934d8dc200c3d412604, type: 3}
+    volume: 1
+    loop: 0
+  - soundName: StoneCrash
+    clip: {fileID: 8300000, guid: 0937e281ded959743a1f16012414d336, type: 3}
+    volume: 1
+    loop: 0
+  - soundName: UI Pop Up
+    clip: {fileID: 8300000, guid: 34c0850d27270e945ac29706f5df86d2, type: 3}
+    volume: 1
+    loop: 0
+  - soundName: Plant Ripped
+    clip: {fileID: 8300000, guid: 1b4cbd17b771dc54a8d7fc65613499f6, type: 3}
+    volume: 1
+    loop: 0
+  - soundName: EnemyExplode
+    clip: {fileID: 8300000, guid: 05645c3606fb5584b938c2e929949a3e, type: 3}
+    volume: 1
+    loop: 0
+  - soundName: Heal
+    clip: {fileID: 8300000, guid: 1abee5249c926ea48aaf617f4bc5ff15, type: 3}
+    volume: 1
+    loop: 0
+  musicList:
+  - soundName: OSTBoss
+    clip: {fileID: 8300000, guid: f4abf09b634458042977bf48fde5b2e7, type: 3}
+    volume: 1
+    loop: 0
+  - soundName: OSTCutscene
+    clip: {fileID: 8300000, guid: 159c278950bbbf744ab8011f77935458, type: 3}
+    volume: 1
+    loop: 0
+  - soundName: OSTGame
+    clip: {fileID: 8300000, guid: 804f4187a9cb09a4484fdd0cd8ec7509, type: 3}
+    volume: 1
+    loop: 0
+  - soundName: OSTMainMenu
+    clip: {fileID: 8300000, guid: b09d62203e30c0e4a859df77a728b6b3, type: 3}
+    volume: 1
+    loop: 0
+  comboList:
+  - soundName: Anjay
+    clip: {fileID: 8300000, guid: 85f03994d081c55409238247ce6c18ce, type: 3}
+    volume: 1
+    loop: 0
+  - soundName: Brainrot
+    clip: {fileID: 8300000, guid: 72d74ee90f6a40b4096ca2d428dd831a, type: 3}
+    volume: 1
+    loop: 0
+  - soundName: Cooked
+    clip: {fileID: 8300000, guid: 2abcc9db3a319db468300452053481d0, type: 3}
+    volume: 1
+    loop: 0
+  - soundName: Sigma
+    clip: {fileID: 8300000, guid: efddaca8ca1f1d4459dccd39b0cef591, type: 3}
+    volume: 1
+    loop: 0
+  - soundName: Skibidi
+    clip: {fileID: 8300000, guid: d7449b8088bf55d499f286d69b9a22c6, type: 3}
+    volume: 1
+    loop: 0
+--- !u!82 &6862871127028416416
+AudioSource:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6550159934945524063}
+  m_Enabled: 1
+  serializedVersion: 4
+  OutputAudioMixerGroup: {fileID: 0}
+  m_audioClip: {fileID: 0}
+  m_Resource: {fileID: 0}
+  m_PlayOnAwake: 1
+  m_Volume: 1
+  m_Pitch: 1
+  Loop: 0
+  Mute: 0
+  Spatialize: 0
+  SpatializePostEffects: 0
+  Priority: 128
+  DopplerLevel: 1
+  MinDistance: 1
+  MaxDistance: 500
+  Pan2D: 0
+  rolloffMode: 0
+  BypassEffects: 0
+  BypassListenerEffects: 0
+  BypassReverbZones: 0
+  rolloffCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 1
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  panLevelCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  spreadCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  reverbZoneMixCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+--- !u!82 &6158494613309657957
+AudioSource:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6550159934945524063}
+  m_Enabled: 1
+  serializedVersion: 4
+  OutputAudioMixerGroup: {fileID: 0}
+  m_audioClip: {fileID: 0}
+  m_Resource: {fileID: 0}
+  m_PlayOnAwake: 1
+  m_Volume: 1
+  m_Pitch: 1
+  Loop: 0
+  Mute: 0
+  Spatialize: 0
+  SpatializePostEffects: 0
+  Priority: 128
+  DopplerLevel: 1
+  MinDistance: 1
+  MaxDistance: 500
+  Pan2D: 0
+  rolloffMode: 0
+  BypassEffects: 0
+  BypassListenerEffects: 0
+  BypassReverbZones: 0
+  rolloffCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 1
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  panLevelCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  spreadCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  reverbZoneMixCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
