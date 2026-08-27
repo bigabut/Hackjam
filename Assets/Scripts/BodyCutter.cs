@@ -18,11 +18,32 @@ public class BodyCutter : MonoBehaviour
         CuttingLine.CutDirection direction,
         Vector3 lineWorldPosition)
     {
+        // =====================================================
+        // CHECK CUT COUNTER
+        // =====================================================
+
+        if (GameCounter.Instance != null)
+        {
+            if (!GameCounter.Instance.CanCut())
+            {
+                Debug.Log(
+                    "Cut counter sudah habis."
+                );
+
+                return;
+            }
+        }
+
+        // =====================================================
+        // REFERENCES
+        // =====================================================
+
         if (gridManager == null)
         {
             Debug.LogWarning(
                 "BodyCutter: GridManager belum diisi."
             );
+
             return;
         }
 
@@ -31,10 +52,12 @@ public class BodyCutter : MonoBehaviour
             Debug.LogWarning(
                 "BodyCutter: Body belum diisi."
             );
+
             return;
         }
 
-        List<BodyCell> cells = GetBodyCells();
+        List<BodyCell> cells =
+            GetBodyCells();
 
         if (cells.Count <= 1)
             return;
@@ -44,7 +67,9 @@ public class BodyCutter : MonoBehaviour
         // =====================================================
 
         Vector2Int linePosition =
-            GetGridLinePosition(lineWorldPosition);
+            GetGridLinePosition(
+                lineWorldPosition
+            );
 
         // =====================================================
         // 2. CARI CONNECTION YANG TERPOTONG
@@ -64,6 +89,15 @@ public class BodyCutter : MonoBehaviour
             );
 
             return;
+        }
+
+        // =====================================================
+        // CUT BERHASIL
+        // =====================================================
+
+        if (GameCounter.Instance != null)
+        {
+            GameCounter.Instance.AddCut();
         }
 
         Debug.Log(
@@ -95,10 +129,14 @@ public class BodyCutter : MonoBehaviour
         // 5. PINDAHKAN GROUP
         // =====================================================
 
-        foreach (List<BodyCell> group in detachedGroups)
+        foreach (List<BodyCell> group
+                 in detachedGroups)
         {
-            if (group == null || group.Count == 0)
+            if (group == null ||
+                group.Count == 0)
+            {
                 continue;
+            }
 
             CreateDetachedBody(group);
         }
@@ -111,7 +149,8 @@ public class BodyCutter : MonoBehaviour
 
         Debug.Log(
             $"Cut selesai. " +
-            $"Detached groups: {detachedGroups.Count}"
+            $"Detached groups: " +
+            $"{detachedGroups.Count}"
         );
     }
 
@@ -182,8 +221,11 @@ public class BodyCutter : MonoBehaviour
             BodyCell second)
         {
             return
-                (a == first && b == second) ||
-                (a == second && b == first);
+                (a == first &&
+                 b == second) ||
+
+                (a == second &&
+                 b == first);
         }
     }
 
@@ -213,21 +255,6 @@ public class BodyCutter : MonoBehaviour
             if (direction ==
                 CuttingLine.CutDirection.Horizontal)
             {
-                /*
-                 *      1 2
-                 * ------------
-                 *      3 4 5
-                 *
-                 * Cut:
-                 * 1 - 3
-                 * 2 - 4
-                 *
-                 * Tetap:
-                 * 1 - 2
-                 * 3 - 4
-                 * 4 - 5
-                 */
-
                 if (position.y !=
                     linePosition.y - 1)
                 {
@@ -245,15 +272,6 @@ public class BodyCutter : MonoBehaviour
 
             else
             {
-                /*
-                 *   1 | 2
-                 *   3 | 4
-                 *
-                 * Cut:
-                 * 1 - 2
-                 * 3 - 4
-                 */
-
                 if (position.x !=
                     linePosition.x - 1)
                 {
@@ -351,8 +369,6 @@ public class BodyCutter : MonoBehaviour
                 if (neighbour == null)
                     continue;
 
-                // Jangan melewati connection
-                // yang terkena cutter.
                 if (IsConnectionCut(
                         current,
                         neighbour,
@@ -387,16 +403,15 @@ public class BodyCutter : MonoBehaviour
         HashSet<BodyCell> alreadyGrouped =
             new HashSet<BodyCell>();
 
-        foreach (BodyCell startingCell in allCells)
+        foreach (BodyCell startingCell
+                 in allCells)
         {
-            // Cell ini masih menjadi Player.
             if (connectedToHead.Contains(
                     startingCell))
             {
                 continue;
             }
 
-            // Sudah dimasukkan ke group.
             if (alreadyGrouped.Contains(
                     startingCell))
             {
@@ -409,8 +424,13 @@ public class BodyCutter : MonoBehaviour
             Queue<BodyCell> queue =
                 new Queue<BodyCell>();
 
-            queue.Enqueue(startingCell);
-            alreadyGrouped.Add(startingCell);
+            queue.Enqueue(
+                startingCell
+            );
+
+            alreadyGrouped.Add(
+                startingCell
+            );
 
             Vector2Int[] directions =
             {
@@ -443,7 +463,6 @@ public class BodyCutter : MonoBehaviour
                     if (neighbour == null)
                         continue;
 
-                    // Connection dipotong.
                     if (IsConnectionCut(
                             current,
                             neighbour,
@@ -452,7 +471,6 @@ public class BodyCutter : MonoBehaviour
                         continue;
                     }
 
-                    // Jangan mengambil cell Player.
                     if (connectedToHead.Contains(
                             neighbour))
                     {
@@ -465,8 +483,13 @@ public class BodyCutter : MonoBehaviour
                         continue;
                     }
 
-                    alreadyGrouped.Add(neighbour);
-                    queue.Enqueue(neighbour);
+                    alreadyGrouped.Add(
+                        neighbour
+                    );
+
+                    queue.Enqueue(
+                        neighbour
+                    );
                 }
             }
 
@@ -519,7 +542,7 @@ public class BodyCutter : MonoBehaviour
         }
 
         // =====================================================
-        // PINDAHKAN SEMUA CELL DALAM GROUP
+        // PINDAHKAN SEMUA CELL
         // =====================================================
 
         foreach (BodyCell cell in cells)
@@ -527,17 +550,14 @@ public class BodyCutter : MonoBehaviour
             if (cell == null)
                 continue;
 
-            // Simpan grid position SEBELUM parent berubah.
             Vector2Int gridPosition =
                 cell.GridPosition;
 
-            // Pertahankan world position.
             cell.transform.SetParent(
                 detachedObject.transform,
                 true
             );
 
-            // Pastikan kembali tepat di grid.
             cell.transform.position =
                 gridManager.GridToWorld(
                     gridPosition
@@ -552,10 +572,7 @@ public class BodyCutter : MonoBehaviour
             );
         }
 
-        // =====================================================
-        // PASTIKAN DETACHED BODY TIDAK IKUT PLAYER
-        // =====================================================
-
+        // Pastikan detached body tidak ikut Player
         detachedObject.transform.SetParent(
             null,
             true
@@ -566,7 +583,6 @@ public class BodyCutter : MonoBehaviour
             $"{cells.Count} cells."
         );
 
-        // Debug isi group.
         string groupInfo = "";
 
         foreach (BodyCell cell in cells)

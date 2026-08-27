@@ -24,8 +24,6 @@ public class GridBodyMovement : MonoBehaviour
     private Vector2Int heldDirection;
     private float holdTimer;
 
-    // Semua cell tubuh disimpan sebagai posisi RELATIF
-    // terhadap bodyPosition.
     private List<Vector2Int> bodyCells =
         new List<Vector2Int>()
         {
@@ -38,9 +36,23 @@ public class GridBodyMovement : MonoBehaviour
     private List<Transform> cellVisuals =
         new List<Transform>();
 
+    // =========================================================
+    // PUBLIC
+    // =========================================================
+
     public Transform GetBodyTransform()
     {
         return transform;
+    }
+
+    public Vector2Int GetBodyPosition()
+    {
+        return bodyPosition;
+    }
+
+    public bool IsMoving()
+    {
+        return isMoving;
     }
 
     // =========================================================
@@ -63,11 +75,11 @@ public class GridBodyMovement : MonoBehaviour
             );
 
         CreateBodyVisual();
-
-        // Pastikan semua BodyCell langsung
-        // memiliki GridPosition yang benar.
-        UpdateAllBodyCellGridPositions();
     }
+
+    // =========================================================
+    // UPDATE
+    // =========================================================
 
     private void Update()
     {
@@ -120,11 +132,8 @@ public class GridBodyMovement : MonoBehaviour
         holdTimer +=
             Time.deltaTime;
 
-        if (holdTimer <
-            holdDelay)
-        {
+        if (holdTimer < holdDelay)
             return;
-        }
 
         if (!isMoving)
         {
@@ -161,9 +170,24 @@ public class GridBodyMovement : MonoBehaviour
     private void TryMove(
         Vector2Int direction)
     {
+        // =====================================================
+        // CHECK MOVE COUNTER
+        // =====================================================
+
+        if (GameCounter.Instance != null)
+        {
+            if (!GameCounter.Instance.CanMove())
+            {
+                Debug.Log(
+                    "Move counter sudah habis."
+                );
+
+                return;
+            }
+        }
+
         Vector2Int newPosition =
-            bodyPosition +
-            direction;
+            bodyPosition + direction;
 
         // =====================================================
         // 1. CEK BATAS GRID
@@ -200,8 +224,7 @@ public class GridBodyMovement : MonoBehaviour
             foreach (BodyCell otherCell
                      in allCells)
             {
-                // BodyCell milik kita sendiri
-                // tidak dianggap obstacle.
+                // Abaikan cell milik tubuh sendiri
                 if (otherCell.transform.IsChildOf(
                         transform))
                 {
@@ -228,39 +251,7 @@ public class GridBodyMovement : MonoBehaviour
         }
 
         // =====================================================
-        // 2.5 CEK TEMBOK / PINTU / OBSTACLE (PAKAI OVERLAP BOX)
-        // =====================================================
-        foreach (Vector2Int cell in bodyCells)
-        {
-            Vector2Int newCellPosition = newPosition + cell;
-            Vector3 worldPosToCheck = gridManager.GridToWorld(newCellPosition);
-
-            // Bikin area kotak deteksi sedikit lebih kecil dari ukuran grid asli (0.8x)
-            // Biar nggak salah deteksi tembok di kotak sebelah
-            Vector2 boxSize = new Vector2(gridManager.CellSize * 0.8f, gridManager.CellSize * 0.8f);
-
-            // Cek semua objek di dalam area kotak tersebut
-            Collider2D[] hits = Physics2D.OverlapBoxAll(worldPosToCheck, boxSize, 0f);
-
-            foreach (Collider2D hit in hits)
-            {
-                // Abaikan kalau yang ketabrak adalah diri sendiri / body-nya sendiri
-                if (hit.transform.IsChildOf(this.transform) || hit.gameObject == this.gameObject)
-                {
-                    continue; 
-                }
-
-                // Kalau nabrak collider yang solid (bukan trigger) dan bukan BodyCell
-                if (!hit.isTrigger && hit.GetComponent<BodyCell>() == null)
-                {
-                    Debug.Log($"Nabrak tembok/rintangan bernama: {hit.gameObject.name}");
-                    return; // Batalkan pergerakan!
-                }
-            }
-        }
-
-        // =====================================================
-        // 3. MOVE
+        // 3. MOVE BERHASIL
         // =====================================================
 
         bodyPosition =
@@ -270,10 +261,19 @@ public class GridBodyMovement : MonoBehaviour
             bodyPosition;
 
         isMoving = true;
+
+        // =====================================================
+        // 4. TAMBAH MOVE COUNTER
+        // =====================================================
+
+        if (GameCounter.Instance != null)
+        {
+            GameCounter.Instance.AddHeadMove();
+        }
     }
 
     // =========================================================
-    // ACTUAL MOVEMENT
+    // MOVE VISUAL
     // =========================================================
 
     private void MoveBody()
@@ -294,7 +294,6 @@ public class GridBodyMovement : MonoBehaviour
                 Time.deltaTime
             );
 
-        // Movement selesai
         if (Vector3.Distance(
                 transform.position,
                 targetWorldPosition
@@ -303,42 +302,12 @@ public class GridBodyMovement : MonoBehaviour
             transform.position =
                 targetWorldPosition;
 
-            // =================================================
-            // PENTING
-            // =================================================
-            // Setelah player selesai bergerak,
-            // update posisi grid semua BodyCell.
-            UpdateAllBodyCellGridPositions();
-
             isMoving = false;
         }
     }
 
     // =========================================================
-    // UPDATE BODY CELL GRID POSITION
-    // =========================================================
-
-    public void UpdateAllBodyCellGridPositions()
-    {
-        BodyCell[] cells =
-            GetComponentsInChildren<BodyCell>();
-
-        foreach (BodyCell cell
-                 in cells)
-        {
-            Vector2Int gridPosition =
-                gridManager.WorldToGrid(
-                    cell.transform.position
-                );
-
-            cell.SetGridPosition(
-                gridPosition
-            );
-        }
-    }
-
-    // =========================================================
-    // BODY CREATION
+    // CREATE BODY
     // =========================================================
 
     private void CreateBodyVisual()
@@ -362,10 +331,10 @@ public class GridBodyMovement : MonoBehaviour
             visual.transform.localPosition =
                 new Vector3(
                     cell.x *
-                        gridManager.CellSize,
+                    gridManager.CellSize,
 
                     cell.y *
-                        gridManager.CellSize,
+                    gridManager.CellSize,
 
                     0f
                 );
@@ -380,8 +349,7 @@ public class GridBodyMovement : MonoBehaviour
                 );
 
                 bodyCell.SetGridPosition(
-                    bodyPosition +
-                    cell
+                    bodyPosition + cell
                 );
             }
 
@@ -410,7 +378,6 @@ public class GridBodyMovement : MonoBehaviour
             cellGridPosition -
             bodyPosition;
 
-        // Jangan masukkan dua kali
         if (bodyCells.Contains(
                 relativePosition))
         {
@@ -451,36 +418,20 @@ public class GridBodyMovement : MonoBehaviour
         BodyCell[] cells =
             GetComponentsInChildren<BodyCell>();
 
-        foreach (BodyCell cell
-                 in cells)
+        foreach (BodyCell cell in cells)
         {
-            // Pastikan GridPosition cell
-            // sudah sesuai posisi world-nya.
-            Vector2Int gridPosition =
-                gridManager.WorldToGrid(
-                    cell.transform.position
-                );
-
-            cell.SetGridPosition(
-                gridPosition
-            );
-
             Vector2Int relativePosition =
-                gridPosition -
+                cell.GridPosition -
                 bodyPosition;
 
-            if (!bodyCells.Contains(
-                    relativePosition))
-            {
-                bodyCells.Add(
-                    relativePosition
-                );
-            }
+            bodyCells.Add(
+                relativePosition
+            );
         }
     }
 
     // =========================================================
-    // DATA
+    // GET BODY CELLS
     // =========================================================
 
     public List<Vector2Int> GetBodyCells()
@@ -492,21 +443,10 @@ public class GridBodyMovement : MonoBehaviour
                  in bodyCells)
         {
             actualCells.Add(
-                bodyPosition +
-                cell
+                bodyPosition + cell
             );
         }
 
         return actualCells;
-    }
-
-    public Vector2Int GetBodyPosition()
-    {
-        return bodyPosition;
-    }
-
-    public bool IsMoving()
-    {
-        return isMoving;
     }
 }
