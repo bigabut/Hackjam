@@ -20,17 +20,16 @@ public class JellyJiggle : MonoBehaviour
         // Cek apakah blok ini sedang menjadi anak dari GridBodyMovement
         bool isAttached = transform.parent != null && transform.parent.GetComponent<GridBodyMovement>() != null;
 
-        // Pertahankan hierarki skala: Kepala = 0.8, Tubuh = 1.0
-        float baseScale = cell.IsHead ? 0.8f : 1.0f;
+        // KUNCI JAWABAN: Set baseScale ke 1.0f untuk SEMUA blok.
+        // BodyCell.cs sudah mengecilkan gambar Kepala ke 0.8f secara mandiri.
+        float baseScale = 1.0f;
 
         if (isAttached)
         {
             // RUMUS FIX: Gelombang Sinus murni.
-            // (Sin + 1) * 0.5 membuat nilainya mengayun sangat mulus dari 0 ke 1.
-            // Hasilnya: Jeli hanya membesar secara kenyal dan tidak bergetar kaku!
             float melar = (Mathf.Sin(Time.time * speed) + 1f) * 0.5f * amount;
             
-            // Tembak langsung ke transform.localScale seperti kodemu
+            // Tembak langsung ke transform.localScale
             transform.localScale = new Vector3(baseScale + melar, baseScale + melar, 1f);
         }
         else

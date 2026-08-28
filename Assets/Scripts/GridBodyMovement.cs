@@ -251,32 +251,39 @@ public class GridBodyMovement : MonoBehaviour
         }
 
         // =====================================================
-        // OBSTACLE CHECK (PINTU / TEMBOK)
+        // OBSTACLE CHECK (SWEEP TEST / BOXCAST)
         // =====================================================
         foreach (Vector2Int cell in bodyCells)
         {
+            Vector2Int currentCellPosition = bodyPosition + cell;
             Vector2Int newCellPosition = newPosition + cell;
-            Vector3 worldPos = gridManager.GridToWorld(newCellPosition);
-
-            Collider2D[] hits = Physics2D.OverlapPointAll(worldPos);
             
-            foreach (Collider2D hit in hits)
-            {
-                // 1. Abaikan Player itu sendiri beserta seluruh anak-anaknya
-                if (hit.transform == transform || hit.transform.IsChildOf(transform)) 
-                    continue;
+            Vector3 startPos = gridManager.GridToWorld(currentCellPosition);
+            Vector3 targetPos = gridManager.GridToWorld(newCellPosition);
 
-                // 2. Abaikan objek gameplay yang memang boleh dilewati/diinjak
-                if (hit.GetComponent<BodyCell>() != null || 
-                    hit.GetComponent<CuttingLine>() != null ||
-                    hit.GetComponent<GoalBox>() != null || 
-                    hit.GetComponent<PressurePlate>() != null)
+            // NAMA VARIABEL DIGANTI JADI moveDir AGAR TIDAK ERROR
+            Vector2 moveDir = (targetPos - startPos).normalized;
+            float distance = Vector3.Distance(startPos, targetPos);
+            
+            Vector2 boxSize = new Vector2(gridManager.CellSize * 0.5f, gridManager.CellSize * 0.5f);
+
+            RaycastHit2D[] hits = Physics2D.BoxCastAll(startPos, boxSize, 0f, moveDir, distance);
+            
+            foreach (RaycastHit2D hit in hits)
+            {
+                if (hit.collider == null) continue;
+                if (hit.transform == transform || hit.transform.IsChildOf(transform)) continue;
+
+                if (hit.collider.GetComponent<BodyCell>() != null || 
+                    hit.collider.GetComponent<CuttingLine>() != null ||
+                    hit.collider.GetComponent<GoalBox>() != null || 
+                    hit.collider.GetComponent<PressurePlate>() != null)
                 {
                     continue;
                 }
 
-                Debug.Log($"Pergerakan dihalangi oleh: {hit.name}");
-                return; // Langsung batalkan pergerakan
+                Debug.Log($"Nabrak: {hit.collider.name}");
+                return; 
             }
         }
 
