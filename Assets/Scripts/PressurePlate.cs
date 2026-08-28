@@ -12,6 +12,14 @@ public class PressurePlate : MonoBehaviour
     [SerializeField] private PintuTipe tipePintu = PintuTipe.Putar;
     [SerializeField] private bool stayOpen = false; 
 
+    [Header("Visual Injakan (Ganti Gambar)")]
+    [Tooltip("Komponen visual plat. (Otomatis terisi jika dibiarkan kosong)")]
+    [SerializeField] private SpriteRenderer plateVisual;
+    [Tooltip("Gambar saat plat NGANGGUR (belum diinjak)")]
+    [SerializeField] private Sprite spriteNormal;
+    [Tooltip("Gambar saat plat DITEKAN")]
+    [SerializeField] private Sprite spriteDitekan;
+
     [Header("Audio (SFX)")]
     [SerializeField] private string openSFX = "Plate Door";
     [SerializeField] private string closeSFX = ""; 
@@ -39,6 +47,9 @@ public class PressurePlate : MonoBehaviour
             posisiAwalTertutup = door.transform.position;
             rotasiAwalTertutup = door.transform.rotation; 
         }
+
+        // Otomatis mencari SpriteRenderer di objek ini jika belum dimasukkan
+        if (plateVisual == null) plateVisual = GetComponent<SpriteRenderer>();
     }
 
     private void Update()
@@ -75,7 +86,12 @@ public class PressurePlate : MonoBehaviour
     {
         isDoorOpen = true;
 
-        // TAMENG PENGAMAN: Cek dulu apakah AudioManager benar-benar ada di scene
+        // --- GANTI GAMBAR JADI DITEKAN ---
+        if (plateVisual != null && spriteDitekan != null)
+        {
+            plateVisual.sprite = spriteDitekan;
+        }
+
         if (!string.IsNullOrEmpty(openSFX))
         {
             if (AudioManager.Instance != null)
@@ -98,7 +114,12 @@ public class PressurePlate : MonoBehaviour
     {
         isDoorOpen = false;
 
-        // TAMENG PENGAMAN AUDIO
+        // --- KEMBALIKAN GAMBAR KE NORMAL ---
+        if (plateVisual != null && spriteNormal != null)
+        {
+            plateVisual.sprite = spriteNormal;
+        }
+
         if (!string.IsNullOrEmpty(closeSFX))
         {
             if (AudioManager.Instance != null)
