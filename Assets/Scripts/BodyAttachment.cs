@@ -6,7 +6,9 @@ public class BodyAttachment : MonoBehaviour
     [SerializeField] private GridManager gridManager;
     [SerializeField] private GridBodyMovement body;
 
-    private void Update()
+
+
+private void Update()
     {
         if (gridManager == null ||
             body == null)
@@ -23,8 +25,13 @@ public class BodyAttachment : MonoBehaviour
 
     private void RefreshAttachmentUI()
     {
-        BodyCell[] allCells = FindObjectsByType<BodyCell>(FindObjectsSortMode.None);
+        BodyCell[] allCells =
+            FindObjectsByType<BodyCell>(
+                FindObjectsSortMode.None
+            );
 
+        // Cek semua BodyCell yang sudah menjadi
+        // bagian dari Player.
         foreach (BodyCell cell in allCells)
         {
             if (cell == null)
@@ -33,11 +40,9 @@ public class BodyAttachment : MonoBehaviour
             if (!IsAttachedCell(cell))
                 continue;
 
-        // 2. Cek deteksi dari blok yang menempel ke Player
-        foreach (BodyCell cell in allCells)
-        {
-            if (!IsAttachedCell(cell)) continue;
-            CheckCellSides(cell);
+            CheckCellSides(
+                cell
+            );
         }
     }
 
@@ -48,6 +53,9 @@ public class BodyAttachment : MonoBehaviour
     private bool IsAttachedCell(
         BodyCell cell)
     {
+        if (cell == null)
+            return false;
+
         return cell.transform.IsChildOf(
             body.transform
         );
@@ -60,6 +68,10 @@ public class BodyAttachment : MonoBehaviour
     private void CheckCellSides(
         BodyCell cell)
     {
+        if (cell == null)
+            return;
+
+        // Reset semua sisi terlebih dahulu.
         cell.HideAllSides();
 
         Vector2Int position =
@@ -99,9 +111,11 @@ public class BodyAttachment : MonoBehaviour
         Vector2Int position,
         Vector2Int direction)
     {
+        if (attachedCell == null)
+            return;
+
         Vector2Int targetPosition =
-            position +
-            direction;
+            position + direction;
 
         BodyCell target =
             FindDetachedBodyCell(
@@ -125,15 +139,22 @@ public class BodyAttachment : MonoBehaviour
     private BodyCell FindDetachedBodyCell(
         Vector2Int targetPosition)
     {
-        BodyCell[] allCells = FindObjectsByType<BodyCell>(FindObjectsSortMode.None);
+        BodyCell[] allCells =
+            FindObjectsByType<BodyCell>(
+                FindObjectsSortMode.None
+            );
+
         foreach (BodyCell cell in allCells)
         {
             if (cell == null)
                 continue;
 
+            // Head tidak boleh menjadi target.
             if (cell.IsHead)
                 continue;
 
+            // Cell yang sudah menjadi bagian Player
+            // bukan detached cell.
             if (IsAttachedCell(cell))
                 continue;
 
@@ -143,6 +164,9 @@ public class BodyAttachment : MonoBehaviour
                 return cell;
             }
         }
+
         return null;
     }
+
+
 }
