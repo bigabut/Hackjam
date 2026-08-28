@@ -58,6 +58,7 @@ public class WinManager : MonoBehaviour
             if (winPanel != null)
             {
                 winPanel.SetActive(true);
+                AudioManager.Instance.PlaySFX("Win");
             }
         }
     }

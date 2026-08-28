@@ -11,27 +11,38 @@ public abstract class CuttingLine : MonoBehaviour
     [Header("Grid")]
     [SerializeField] protected GridManager gridManager;
 
-    [Header("Drag")]
-    [SerializeField] protected float dragHeight = 0f;
-
     [Header("Cut")]
     [SerializeField] private BodyCutter bodyCutter;
 
     protected Camera mainCamera;
-
     protected bool isDragging;
+
+    // =========================================================
+    // START
+    // =========================================================
 
     protected virtual void Start()
     {
         mainCamera = Camera.main;
 
+        if (gridManager == null)
+        {
+            gridManager =
+                FindFirstObjectByType<GridManager>();
+        }
+
         SnapToGrid();
     }
 
+    // =========================================================
+    // UPDATE
+    // =========================================================
+
     protected virtual void Update()
     {
-        if (WinManager.IsGameOver) return;
-        
+        if (WinManager.IsGameOver)
+            return;
+
         HandleDrag();
     }
 
@@ -49,30 +60,19 @@ public abstract class CuttingLine : MonoBehaviour
                 Input.mousePosition
             );
 
-        mouseWorld.z = transform.position.z;
-
-        // =====================================================
-        // LEFT CLICK DOWN
-        // =====================================================
+        mouseWorld.z =
+            transform.position.z;
 
         if (Input.GetMouseButtonDown(0))
         {
             TryStartDrag(mouseWorld);
         }
 
-        // =====================================================
-        // DRAGGING
-        // =====================================================
-
         if (isDragging &&
             Input.GetMouseButton(0))
         {
             Drag(mouseWorld);
         }
-
-        // =====================================================
-        // LEFT CLICK UP
-        // =====================================================
 
         if (isDragging &&
             Input.GetMouseButtonUp(0))
@@ -94,7 +94,7 @@ public abstract class CuttingLine : MonoBehaviour
         if (collider == null)
         {
             Debug.LogWarning(
-                $"{name} tidak memiliki Collider2D."
+                $"{name}: Collider2D tidak ditemukan."
             );
 
             return;
@@ -106,10 +106,6 @@ public abstract class CuttingLine : MonoBehaviour
         isDragging = true;
 
         OnStartDrag();
-
-        Debug.Log(
-            $"Started dragging {name}"
-        );
     }
 
     // =========================================================
@@ -119,11 +115,13 @@ public abstract class CuttingLine : MonoBehaviour
     private void Drag(
         Vector3 mouseWorld)
     {
-        Vector3 targetPosition =
-            GetDragPosition(mouseWorld);
-
+        // Cutter sekarang bisa bergerak bebas
         transform.position =
-            targetPosition;
+            new Vector3(
+                mouseWorld.x,
+                mouseWorld.y,
+                transform.position.z
+            );
     }
 
     // =========================================================
@@ -134,19 +132,15 @@ public abstract class CuttingLine : MonoBehaviour
     {
         isDragging = false;
 
-        // Snap ke grid dulu
+        // Snap ke boundary grid terdekat
         SnapToGrid();
 
         OnStopDrag();
 
-        // =====================================================
-        // CUT
-        // =====================================================
-
         if (bodyCutter == null)
         {
             Debug.LogWarning(
-                $"{name} tidak memiliki BodyCutter."
+                $"{name}: BodyCutter belum diassign."
             );
 
             return;
@@ -155,11 +149,6 @@ public abstract class CuttingLine : MonoBehaviour
         bodyCutter.Cut(
             GetCutDirection(),
             transform.position
-        );
-
-        Debug.Log(
-            $"Cut executed by {name} " +
-            $"at {transform.position}"
         );
     }
 
@@ -172,10 +161,6 @@ public abstract class CuttingLine : MonoBehaviour
     );
 
     protected abstract void SnapToGrid();
-
-    // =========================================================
-    // CUT DIRECTION
-    // =========================================================
 
     protected abstract CutDirection GetCutDirection();
 

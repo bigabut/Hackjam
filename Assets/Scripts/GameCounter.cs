@@ -1,3 +1,4 @@
+
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using TMPro;
@@ -37,7 +38,7 @@ public class GameCounter : MonoBehaviour
     }
 
     // =========================================================
-    // CUT
+    // CUT COUNTER
     // =========================================================
 
     public bool CanCut()
@@ -57,13 +58,19 @@ public class GameCounter : MonoBehaviour
         }
 
         cutCount++;
+        AudioManager.Instance.PlaySFX("Cutting");
+
+        Debug.Log(
+            $"Cut Counter: " +
+            $"{cutCount}/{maxCutCount}"
+        );
 
         UpdateUI();
         CheckReload();
     }
 
     // =========================================================
-    // HEAD MOVE
+    // HEAD MOVEMENT COUNTER
     // =========================================================
 
     public bool CanMove()
@@ -83,6 +90,13 @@ public class GameCounter : MonoBehaviour
         }
 
         headMoveCount++;
+        AudioManager.Instance.PlaySFX("Movement");
+
+
+        Debug.Log(
+            $"Move Counter: " +
+            $"{headMoveCount}/{maxHeadMoveCount}"
+        );
 
         UpdateUI();
         CheckReload();
@@ -130,11 +144,25 @@ public class GameCounter : MonoBehaviour
             cutCounterText.text =
                 $"{cutCount} / {maxCutCount}";
         }
+        else
+        {
+            Debug.LogWarning(
+                "GameCounter: " +
+                "Cut Counter Text belum diisi!"
+            );
+        }
 
         if (headMoveCounterText != null)
         {
             headMoveCounterText.text =
                 $"{headMoveCount} / {maxHeadMoveCount}";
+        }
+        else
+        {
+            Debug.LogWarning(
+                "GameCounter: " +
+                "Head Movement Counter Text belum diisi!"
+            );
         }
     }
 
@@ -168,8 +196,11 @@ public class GameCounter : MonoBehaviour
     // GETTERS
     // =========================================================
 
-    public int CutCount => cutCount;
-    public int MaxCutCount => maxCutCount;
+    public int CutCount =>
+        cutCount;
+
+    public int MaxCutCount =>
+        maxCutCount;
 
     public int HeadMoveCount =>
         headMoveCount;
@@ -177,3 +208,4 @@ public class GameCounter : MonoBehaviour
     public int MaxHeadMoveCount =>
         maxHeadMoveCount;
 }
+

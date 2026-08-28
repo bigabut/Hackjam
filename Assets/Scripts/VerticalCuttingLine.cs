@@ -14,6 +14,9 @@ public class VerticalCuttingLine : CuttingLine
 
     protected override void SnapToGrid()
     {
+        if (gridManager == null)
+            return;
+
         Vector3 localPosition =
             transform.position -
             gridManager.transform.position;
@@ -26,29 +29,23 @@ public class VerticalCuttingLine : CuttingLine
                 localPosition.x / cellSize
             ) * cellSize;
 
+        snappedX =
+            Mathf.Clamp(
+                snappedX,
+                0f,
+                gridManager.Width * cellSize
+            );
+
+        // Y tetap mengikuti posisi cutter saat dilepas
         float snappedY =
-            Mathf.Round(
-                localPosition.y / cellSize
-            ) * cellSize;
-
-        snappedX = Mathf.Clamp(
-            snappedX,
-            0f,
-            gridManager.Width * cellSize
-        );
-
-        snappedY = Mathf.Clamp(
-            snappedY,
-            0f,
-            gridManager.Height * cellSize
-        );
+            localPosition.y;
 
         transform.position =
             gridManager.transform.position +
             new Vector3(
                 snappedX,
                 snappedY,
-                0f
+                transform.position.z
             );
     }
 
