@@ -82,7 +82,7 @@ SpriteRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 1
   m_MaskInteraction: 0
-  m_Sprite: {fileID: 7482667652216324306, guid: 311925a002f4447b3a28927169b83ea6, type: 3}
+  m_Sprite: {fileID: -1027427249108025955, guid: e7d73ea73cf7d0b45b2a8084c3c279c6, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 0.34117648}
   m_FlipX: 0
   m_FlipY: 0
@@ -106,10 +106,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::GoalBox
   gridManager: {fileID: 0}
   syaratTipe: 0
-  spriteRenderer: {fileID: 0}
-  gambarPolos: {fileID: 0}
-  gambarMotif: {fileID: 0}
-  gambarKepala: {fileID: 0}
+  spriteRenderer: {fileID: 278222577262938780}
+  gambarPolos: {fileID: -1027427249108025955, guid: e7d73ea73cf7d0b45b2a8084c3c279c6, type: 3}
+  gambarMotif: {fileID: -5677333793695527147, guid: 139547969c9513847868c4066ee8bf4f, type: 3}
+  gambarKepala: {fileID: 21300000, guid: be813a0731f8d1c40bbd2618cc1b55f8, type: 3}
 --- !u!1 &5470524009298797850
 GameObject:
   m_ObjectHideFlags: 0
@@ -135,9 +135,9 @@ Transform:
   m_GameObject: {fileID: 5470524009298797850}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -4.02088, y: 0.939, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1.35, y: 1.35, z: 1.35}
+  m_ConstrainProportionsScale: 1
   m_Children:
   - {fileID: 8940834770452405812}
   m_Father: {fileID: 0}

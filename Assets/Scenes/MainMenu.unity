@@ -1482,13 +1482,13 @@ RectTransform:
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 6.0375004, y: 3.4571998, z: 1}
-  m_ConstrainProportionsScale: 0
+  m_ConstrainProportionsScale: 1
   m_Children: []
   m_Father: {fileID: 5603278}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -624, y: 352}
+  m_AnchoredPosition: {x: -624, y: 324}
   m_SizeDelta: {x: 100, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &359552925
@@ -1504,14 +1504,14 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
   m_Material: {fileID: 0}
-  m_Color: {r: 0.21960786, g: 0.21960786, b: 0.21960786, a: 1}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 7482667652216324306, guid: db750325989564987a34393247d883b4, type: 3}
+  m_Sprite: {fileID: 2174089162542845029, guid: b45525f395b6bc045ac5a4ebd7c3f4e7, type: 3}
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
@@ -1729,7 +1729,7 @@ RectTransform:
   m_GameObject: {fileID: 468411831}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalScale: {x: 12, y: 3.2, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 1255887763}
@@ -1737,7 +1737,7 @@ RectTransform:
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
   m_AnchoredPosition: {x: 0, y: 79}
-  m_SizeDelta: {x: 100, y: 100}
+  m_SizeDelta: {x: 50, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &468411833
 MonoBehaviour:
@@ -1759,7 +1759,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 0}
+  m_Sprite: {fileID: -7723878917458204143, guid: 5ca64994a4665dd4082fbff78a68510d, type: 3}
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
@@ -2162,15 +2162,15 @@ RectTransform:
   m_GameObject: {fileID: 677129711}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
+  m_LocalScale: {x: 3, y: 3, z: 3}
+  m_ConstrainProportionsScale: 1
   m_Children: []
   m_Father: {fileID: 608413909}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 0, y: 264}
-  m_SizeDelta: {x: 100, y: 100}
+  m_AnchoredPosition: {x: 0, y: 293}
+  m_SizeDelta: {x: 159.29, y: 67.39}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &677129713
 MonoBehaviour:
@@ -2192,7 +2192,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 0}
+  m_Sprite: {fileID: 2174089162542845029, guid: b45525f395b6bc045ac5a4ebd7c3f4e7, type: 3}
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
@@ -3159,8 +3159,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 0, y: -168}
-  m_SizeDelta: {x: 200, y: 50}
+  m_AnchoredPosition: {x: -0.49, y: -135}
+  m_SizeDelta: {x: 512.76, y: 50}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &958073910
 MonoBehaviour:
@@ -3182,7 +3182,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: New Text
+  m_text: Welcome to
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 5b4081031d5575e4da6b6aa7280f72dc, type: 2}
   m_sharedMaterial: {fileID: -2934500538605930926, guid: 5b4081031d5575e4da6b6aa7280f72dc, type: 2}
@@ -4518,6 +4518,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: MainMenuManager
       objectReference: {fileID: 0}
+    - target: {fileID: 684600756820684782, guid: 1071103b4cc926349a205e45cd5803d7, type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 5051383770098824244, guid: 1071103b4cc926349a205e45cd5803d7, type: 3}
       propertyPath: _creditPanel
       value: 
@@ -4644,11 +4648,32 @@ MonoBehaviour:
   prevButton: {fileID: 262472421}
   nextButtonText: {fileID: 1336088700}
   tutorialImages:
-  - {fileID: 21300000, guid: 8832e809af1b43c44a27678c8d316c4a, type: 3}
+  - {fileID: -7723878917458204143, guid: 5ca64994a4665dd4082fbff78a68510d, type: 3}
+  - {fileID: 2416061620125344155, guid: b2b760810e45b454d97ee533622c0974, type: 3}
+  - {fileID: -7210470214081766192, guid: 0f7598e0abad3e84fbfe536dc2ffc27d, type: 3}
+  - {fileID: -1805463728544329446, guid: de6633d845e74af45bd3e15afbef18ad, type: 3}
+  - {fileID: -1758170534792519715, guid: d01dc9fd1d5a3e049bc8c37a3978d01f, type: 3}
   - {fileID: 21300000, guid: f15bdbce52c1dda4b8cf33ddac80a5a9, type: 3}
+  - {fileID: 747492405262832995, guid: 632b6976bf2ea8945a3d09a236f0d72a, type: 3}
+  - {fileID: 7837628249499518303, guid: dcfee7518cf4beb4ba43352aec40b413, type: 3}
+  - {fileID: -2183872611098917974, guid: 46eaafcfc75f19147abf84b51d9d17ff, type: 3}
+  - {fileID: -9119395583152971082, guid: 55b1f8bca3f0deb4b85ee3cae96ed9b7, type: 3}
+  - {fileID: -6628576971146582913, guid: 87458aac8fa882f428dc64ca3ce1abc7, type: 3}
   tutorialTexts:
-  - halo
-  - tes
+  - Welcome to JellyGo!
+  - You are playing as The Jelly!
+  - You have one head and several blocks.
+  - Your job is to put your body block into a jelly cup!
+  - To do that, you have to sacrifice your body. So, drag the cutter and release
+    to  cut it out!
+  - "Don\u2019t worry, you still can attach your body again! Just click at it once
+    you are close."
+  - You can also use and leave your body to trigger a pressure plate!
+  - "Sometimes, you\u2019ll find a body that need to fill into spesific cup."
+  - Ohh yeah, your movement and cut are limited. So, use them wisely!
+  - You can replay the level everytime you need! (or if you running out of cut and
+    move)
+  - Fill all of the cup and win the level!
 --- !u!1 &1336088699
 GameObject:
   m_ObjectHideFlags: 0
