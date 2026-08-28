@@ -410,31 +410,22 @@ public class BodyCell : MonoBehaviour
     {
         if (targetCell == null)
         {
-            Debug.LogWarning(
-                $"{name}: targetCell null."
-            );
-
+            Debug.LogWarning($"{name}: targetCell null.");
             return;
         }
 
-        Debug.Log(
-            $"Attach requested: " +
-            $"{name} -> {targetCell.name}"
-        );
+        Debug.Log($"Attach requested: {name} -> {targetCell.name}");
 
-        // =====================================================
-        // CARI PLAYER
-        // =====================================================
+        // 1. Logika Cerdas: Tentukan mana sel milik Player yang hidup, dan mana sel yang terlepas
+        BodyCell playerCell = this.GetComponentInParent<GridBodyMovement>() != null ? this : targetCell;
+        BodyCell detachedCell = this == playerCell ? targetCell : this;
 
-        Transform player =
-            transform.parent;
+        // 2. Ambil induk (Transform) dari sel Player yang sebenarnya
+        Transform playerTransform = playerCell.transform.parent;
 
-        if (player == null)
+        if (playerTransform == null)
         {
-            Debug.LogError(
-                $"{name} tidak memiliki Player parent."
-            );
-
+            Debug.LogError("Gagal menemukan Player parent.");
             return;
         }
 
@@ -447,26 +438,13 @@ public class BodyCell : MonoBehaviour
 
         if (detachedBody != null)
         {
-            Debug.Log(
-                $"Target {targetCell.name} " +
-                $"berada di DetachedBody. " +
-                $"Mengattach seluruh group."
-            );
-
-            detachedBody.AttachToPlayer(
-                player
-            );
-
+            Debug.Log($"Mengattach seluruh group DetachedBody.");
+            detachedBody.AttachToPlayer(playerTransform);
             return;
         }
 
-        // =====================================================
-        // TARGET STANDALONE
-        // =====================================================
-
-        targetCell.AttachToBody(
-            player
-        );
+        // 4. Jika target berdiri sendiri (Standalone)
+        detachedCell.AttachToBody(playerTransform);
     }
 
     // =========================================================

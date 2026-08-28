@@ -23,10 +23,7 @@ public class BodyAttachment : MonoBehaviour
 
     private void RefreshAttachmentUI()
     {
-        BodyCell[] allCells =
-            FindObjectsByType<BodyCell>(
-                FindObjectsSortMode.None
-            );
+        BodyCell[] allCells = FindObjectsByType<BodyCell>(FindObjectsSortMode.None);
 
         foreach (BodyCell cell in allCells)
         {
@@ -36,6 +33,10 @@ public class BodyAttachment : MonoBehaviour
             if (!IsAttachedCell(cell))
                 continue;
 
+        // 2. Cek deteksi dari blok yang menempel ke Player
+        foreach (BodyCell cell in allCells)
+        {
+            if (!IsAttachedCell(cell)) continue;
             CheckCellSides(cell);
         }
     }
@@ -124,11 +125,7 @@ public class BodyAttachment : MonoBehaviour
     private BodyCell FindDetachedBodyCell(
         Vector2Int targetPosition)
     {
-        BodyCell[] allCells =
-            FindObjectsByType<BodyCell>(
-                FindObjectsSortMode.None
-            );
-
+        BodyCell[] allCells = FindObjectsByType<BodyCell>(FindObjectsSortMode.None);
         foreach (BodyCell cell in allCells)
         {
             if (cell == null)
@@ -146,7 +143,6 @@ public class BodyAttachment : MonoBehaviour
                 return cell;
             }
         }
-
         return null;
     }
 }
