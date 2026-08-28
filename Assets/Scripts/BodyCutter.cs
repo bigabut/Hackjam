@@ -18,6 +18,11 @@ public class BodyCutter : MonoBehaviour
         CuttingLine.CutDirection direction,
         Vector3 lineWorldPosition)
     {
+        if (body != null && body.IsMoving())
+        {
+            Debug.Log("Jelly sedang bergerak, potong ditolak!");
+            return;
+        }
         // =====================================================
         // CHECK CUT COUNTER
         // =====================================================

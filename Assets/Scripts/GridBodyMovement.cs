@@ -251,6 +251,36 @@ public class GridBodyMovement : MonoBehaviour
         }
 
         // =====================================================
+        // OBSTACLE CHECK (PINTU / TEMBOK)
+        // =====================================================
+        foreach (Vector2Int cell in bodyCells)
+        {
+            Vector2Int newCellPosition = newPosition + cell;
+            Vector3 worldPos = gridManager.GridToWorld(newCellPosition);
+
+            Collider2D[] hits = Physics2D.OverlapPointAll(worldPos);
+            
+            foreach (Collider2D hit in hits)
+            {
+                // 1. Abaikan Player itu sendiri beserta seluruh anak-anaknya
+                if (hit.transform == transform || hit.transform.IsChildOf(transform)) 
+                    continue;
+
+                // 2. Abaikan objek gameplay yang memang boleh dilewati/diinjak
+                if (hit.GetComponent<BodyCell>() != null || 
+                    hit.GetComponent<CuttingLine>() != null ||
+                    hit.GetComponent<GoalBox>() != null || 
+                    hit.GetComponent<PressurePlate>() != null)
+                {
+                    continue;
+                }
+
+                Debug.Log($"Pergerakan dihalangi oleh: {hit.name}");
+                return; // Langsung batalkan pergerakan
+            }
+        }
+
+        // =====================================================
         // 3. MOVE BERHASIL
         // =====================================================
 
@@ -262,6 +292,15 @@ public class GridBodyMovement : MonoBehaviour
 
         isMoving = true;
 
+        // --- [KODE BARU: Paksa seluruh data anak sinkron instan] ---
+        BodyCell[] cells = GetComponentsInChildren<BodyCell>();
+        foreach (BodyCell cell in cells)
+        {
+            cell.SetGridPosition(cell.GridPosition + direction);
+        }
+        
+        RefreshBodyCells();
+        
         // =====================================================
         // 4. TAMBAH MOVE COUNTER
         // =====================================================
@@ -303,6 +342,15 @@ public class GridBodyMovement : MonoBehaviour
                 targetWorldPosition;
 
             isMoving = false;
+
+            // --- [KODE TAMBAHAN FIX] ---
+            // Update posisi grid semua BodyCell setelah selesai bergerak
+            BodyCell[] cells = GetComponentsInChildren<BodyCell>();
+            foreach (BodyCell cell in cells)
+            {
+                cell.UpdateGridPosition();
+            }
+            // ---------------------------
         }
     }
 
