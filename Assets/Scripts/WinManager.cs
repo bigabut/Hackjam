@@ -55,6 +55,7 @@ public class WinManager : MonoBehaviour
             if (winPanel != null)
             {
                 winPanel.SetActive(true);
+                AudioManager.Instance.PlaySFX("Win");
             }
             
             // (Hapus kode playerMovement.enabled = false yang kemarin, kita udah nggak butuh itu lagi)

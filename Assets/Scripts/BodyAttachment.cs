@@ -8,8 +8,18 @@ public class BodyAttachment : MonoBehaviour
 
     private void Update()
     {
+        if (gridManager == null ||
+            body == null)
+        {
+            return;
+        }
+
         RefreshAttachmentUI();
     }
+
+    // =========================================================
+    // REFRESH
+    // =========================================================
 
     private void RefreshAttachmentUI()
     {
@@ -18,10 +28,11 @@ public class BodyAttachment : MonoBehaviour
                 FindObjectsSortMode.None
             );
 
-        // Semua cell yang sudah menjadi bagian Player
-        // boleh melakukan attachment detection.
         foreach (BodyCell cell in allCells)
         {
+            if (cell == null)
+                continue;
+
             if (!IsAttachedCell(cell))
                 continue;
 
@@ -29,83 +40,89 @@ public class BodyAttachment : MonoBehaviour
         }
     }
 
-    private bool IsAttachedCell(BodyCell cell)
-    {
-        if (body == null)
-            return false;
+    // =========================================================
+    // ATTACHED?
+    // =========================================================
 
+    private bool IsAttachedCell(
+        BodyCell cell)
+    {
         return cell.transform.IsChildOf(
             body.transform
         );
     }
 
-    private void CheckCellSides(BodyCell cell)
+    // =========================================================
+    // CHECK SIDES
+    // =========================================================
+
+    private void CheckCellSides(
+        BodyCell cell)
     {
-        // Reset UI
         cell.HideAllSides();
 
-        Vector2Int cellPosition =
-            gridManager.WorldToGrid(
-                cell.transform.position
-            );
+        Vector2Int position =
+            cell.GridPosition;
 
         CheckDirection(
             cell,
-            cellPosition,
+            position,
             Vector2Int.up
         );
 
         CheckDirection(
             cell,
-            cellPosition,
+            position,
             Vector2Int.down
         );
 
         CheckDirection(
             cell,
-            cellPosition,
+            position,
             Vector2Int.left
         );
 
         CheckDirection(
             cell,
-            cellPosition,
+            position,
             Vector2Int.right
         );
     }
 
+    // =========================================================
+    // CHECK DIRECTION
+    // =========================================================
+
     private void CheckDirection(
         BodyCell attachedCell,
-        Vector2Int cellPosition,
-        Vector2Int direction
-    )
+        Vector2Int position,
+        Vector2Int direction)
     {
         Vector2Int targetPosition =
-            cellPosition + direction;
+            position +
+            direction;
 
-        BodyCell targetCell =
+        BodyCell target =
             FindDetachedBodyCell(
                 targetPosition
             );
 
-        if (targetCell == null)
+        if (target == null)
             return;
-
-        Debug.Log(
-            $"[{attachedCell.name}] menemukan " +
-            $"[{targetCell.name}] di {direction}"
-        );
 
         attachedCell.SetSideAvailable(
             direction,
             true,
-            targetCell
+            target
         );
     }
 
+    // =========================================================
+    // FIND DETACHED CELL
+    // =========================================================
+
     private BodyCell FindDetachedBodyCell(
-        Vector2Int targetPosition
-    )
+        Vector2Int targetPosition)
     {
         BodyCell[] allCells =
             FindObjectsByType<BodyCell>(
@@ -114,20 +131,17 @@ public class BodyAttachment : MonoBehaviour
 
         foreach (BodyCell cell in allCells)
         {
-            // Head tidak pernah menjadi target
+            if (cell == null)
+                continue;
+
             if (cell.IsHead)
                 continue;
 
-            // Sudah menjadi bagian tubuh
             if (IsAttachedCell(cell))
                 continue;
 
-            Vector2Int cellPosition =
-                gridManager.WorldToGrid(
-                    cell.transform.position
-                );
-
-            if (cellPosition == targetPosition)
+            if (cell.GridPosition ==
+                targetPosition)
             {
                 return cell;
             }

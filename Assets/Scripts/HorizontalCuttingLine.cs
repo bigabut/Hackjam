@@ -14,6 +14,9 @@ public class HorizontalCuttingLine : CuttingLine
 
     protected override void SnapToGrid()
     {
+        if (gridManager == null)
+            return;
+
         Vector3 localPosition =
             transform.position -
             gridManager.transform.position;
@@ -21,34 +24,28 @@ public class HorizontalCuttingLine : CuttingLine
         float cellSize =
             gridManager.CellSize;
 
-        float snappedX =
-            Mathf.Round(
-                localPosition.x / cellSize
-            ) * cellSize;
-
         float snappedY =
             Mathf.Round(
                 localPosition.y / cellSize
             ) * cellSize;
 
-        snappedX = Mathf.Clamp(
-            snappedX,
-            0f,
-            gridManager.Width * cellSize
-        );
+        snappedY =
+            Mathf.Clamp(
+                snappedY,
+                0f,
+                gridManager.Height * cellSize
+            );
 
-        snappedY = Mathf.Clamp(
-            snappedY,
-            0f,
-            gridManager.Height * cellSize
-        );
+        // X tetap mengikuti posisi cutter saat dilepas
+        float snappedX =
+            localPosition.x;
 
         transform.position =
             gridManager.transform.position +
             new Vector3(
                 snappedX,
                 snappedY,
-                0f
+                transform.position.z
             );
     }
 

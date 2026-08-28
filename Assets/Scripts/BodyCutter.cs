@@ -10,6 +10,9 @@ public class BodyCutter : MonoBehaviour
     [Header("Detached Body")]
     [SerializeField] private GameObject detachedBodyPrefab;
 
+    [Header("Cut Detection")]
+    [SerializeField] private float lineTolerance = 0.15f;
+
     // =========================================================
     // CUT
     // =========================================================
@@ -18,9 +21,83 @@ public class BodyCutter : MonoBehaviour
         CuttingLine.CutDirection direction,
         Vector3 lineWorldPosition)
     {
-        // =====================================================
-        // CHECK CUT COUNTER
-        // =====================================================
+        // -----------------------------------------------------
+        // VALIDASI
+        // -----------------------------------------------------
+
+        if (gridManager == null)
+        {
+            Debug.LogError(
+                "BodyCutter: GridManager belum diassign."
+            );
+
+            return;
+        }
+
+        if (body == null)
+        {
+            Debug.LogError(
+                "BodyCutter: GridBodyMovement belum diassign."
+            );
+
+            return;
+        }
+
+        if (body.IsMoving())
+        {
+            Debug.Log(
+                "Tidak bisa cutting saat body sedang bergerak."
+            );
+
+            return;
+        }
+
+        // -----------------------------------------------------
+        // GET BODY
+        // -----------------------------------------------------
+
+        List<BodyCell> cells =
+            GetBodyCells();
+
+        if (cells.Count <= 1)
+        {
+            Debug.Log(
+                "Body terlalu kecil untuk dipotong."
+            );
+
+            return;
+        }
+
+        // Pastikan posisi grid setiap cell benar
+        RefreshCellPositions(cells);
+
+        // -----------------------------------------------------
+        // FIND CONNECTION YANG DILALUI CUTTER
+        // -----------------------------------------------------
+
+        HashSet<Connection> cutConnections =
+            FindCutConnections(
+                cells,
+                direction,
+                lineWorldPosition
+            );
+
+        if (cutConnections.Count == 0)
+        {
+            Debug.Log(
+                "Cutter tidak memotong connection BodyCell."
+            );
+
+            return;
+        }
+
+        Debug.Log(
+            $"Cutter memutus {cutConnections.Count} connection."
+        );
+
+        // -----------------------------------------------------
+        // COUNTER
+        // -----------------------------------------------------
 
         if (GameCounter.Instance != null)
         {
@@ -32,81 +109,13 @@ public class BodyCutter : MonoBehaviour
 
                 return;
             }
-        }
 
-        // =====================================================
-        // REFERENCES
-        // =====================================================
-
-        if (gridManager == null)
-        {
-            Debug.LogWarning(
-                "BodyCutter: GridManager belum diisi."
-            );
-
-            return;
-        }
-
-        if (body == null)
-        {
-            Debug.LogWarning(
-                "BodyCutter: Body belum diisi."
-            );
-
-            return;
-        }
-
-        List<BodyCell> cells =
-            GetBodyCells();
-
-        if (cells.Count <= 1)
-            return;
-
-        // =====================================================
-        // 1. DAPATKAN POSISI GARIS
-        // =====================================================
-
-        Vector2Int linePosition =
-            GetGridLinePosition(
-                lineWorldPosition
-            );
-
-        // =====================================================
-        // 2. CARI CONNECTION YANG TERPOTONG
-        // =====================================================
-
-        HashSet<Connection> cutConnections =
-            FindCutConnections(
-                cells,
-                direction,
-                linePosition
-            );
-
-        if (cutConnections.Count == 0)
-        {
-            Debug.Log(
-                "Cut tidak mengenai connection body."
-            );
-
-            return;
-        }
-
-        // =====================================================
-        // CUT BERHASIL
-        // =====================================================
-
-        if (GameCounter.Instance != null)
-        {
             GameCounter.Instance.AddCut();
         }
 
-        Debug.Log(
-            $"Cutting {cutConnections.Count} connection."
-        );
-
-        // =====================================================
-        // 3. CARI SEMUA CELL YANG MASIH TERHUBUNG HEAD
-        // =====================================================
+        // -----------------------------------------------------
+        // CARI CELL YANG MASIH TERHUBUNG KE HEAD
+        // -----------------------------------------------------
 
         HashSet<BodyCell> connectedToHead =
             FindConnectedToHead(
@@ -114,9 +123,9 @@ public class BodyCutter : MonoBehaviour
                 cutConnections
             );
 
-        // =====================================================
-        // 4. CARI SEMUA GROUP YANG TERPISAH
-        // =====================================================
+        // -----------------------------------------------------
+        // CARI GROUP YANG DETACHED
+        // -----------------------------------------------------
 
         List<List<BodyCell>> detachedGroups =
             FindDetachedGroups(
@@ -125,9 +134,9 @@ public class BodyCutter : MonoBehaviour
                 cutConnections
             );
 
-        // =====================================================
-        // 5. PINDAHKAN GROUP
-        // =====================================================
+        // -----------------------------------------------------
+        // CREATE DETACHED
+        // -----------------------------------------------------
 
         foreach (List<BodyCell> group
                  in detachedGroups)
@@ -138,24 +147,47 @@ public class BodyCutter : MonoBehaviour
                 continue;
             }
 
+            // SAFETY:
+            // Jangan pernah detach group yang berisi Head.
+            bool containsHead = false;
+
+            foreach (BodyCell cell in group)
+            {
+                if (cell != null &&
+                    cell.IsHead)
+                {
+                    containsHead = true;
+                    break;
+                }
+            }
+
+            if (containsHead)
+            {
+                Debug.LogWarning(
+                    "Group mengandung Head. " +
+                    "Group tidak akan detached."
+                );
+
+                continue;
+            }
+
             CreateDetachedBody(group);
         }
 
-        // =====================================================
-        // 6. REFRESH PLAYER
-        // =====================================================
+        // -----------------------------------------------------
+        // REFRESH PLAYER
+        // -----------------------------------------------------
 
         body.RefreshBodyCells();
 
         Debug.Log(
             $"Cut selesai. " +
-            $"Detached groups: " +
-            $"{detachedGroups.Count}"
+            $"Detached groups = {detachedGroups.Count}"
         );
     }
 
     // =========================================================
-    // GET PLAYER BODY CELLS
+    // GET BODY CELLS
     // =========================================================
 
     private List<BodyCell> GetBodyCells()
@@ -164,39 +196,42 @@ public class BodyCutter : MonoBehaviour
             new List<BodyCell>();
 
         BodyCell[] cells =
-            body.GetComponentsInChildren<BodyCell>();
+            body.GetComponentsInChildren<BodyCell>(
+                true
+            );
 
         foreach (BodyCell cell in cells)
         {
             if (cell != null)
+            {
                 result.Add(cell);
+            }
         }
 
         return result;
     }
 
     // =========================================================
-    // GRID LINE POSITION
+    // REFRESH GRID POSITION
     // =========================================================
 
-    private Vector2Int GetGridLinePosition(
-        Vector3 worldPosition)
+    private void RefreshCellPositions(
+        List<BodyCell> cells)
     {
-        Vector3 localPosition =
-            worldPosition -
-            gridManager.transform.position;
+        foreach (BodyCell cell in cells)
+        {
+            if (cell == null)
+                continue;
 
-        return new Vector2Int(
-            Mathf.RoundToInt(
-                localPosition.x /
-                gridManager.CellSize
-            ),
+            Vector2Int gridPosition =
+                gridManager.WorldToGrid(
+                    cell.transform.position
+                );
 
-            Mathf.RoundToInt(
-                localPosition.y /
-                gridManager.CellSize
-            )
-        );
+            cell.SetGridPosition(
+                gridPosition
+            );
+        }
     }
 
     // =========================================================
@@ -221,11 +256,8 @@ public class BodyCutter : MonoBehaviour
             BodyCell second)
         {
             return
-                (a == first &&
-                 b == second) ||
-
-                (a == second &&
-                 b == first);
+                (a == first && b == second) ||
+                (a == second && b == first);
         }
     }
 
@@ -236,68 +268,139 @@ public class BodyCutter : MonoBehaviour
     private HashSet<Connection> FindCutConnections(
         List<BodyCell> cells,
         CuttingLine.CutDirection direction,
-        Vector2Int linePosition)
+        Vector3 lineWorldPosition)
     {
         HashSet<Connection> result =
             new HashSet<Connection>();
 
-        foreach (BodyCell cell in cells)
+        Vector3 gridOrigin =
+            gridManager.transform.position;
+
+        float cellSize =
+            gridManager.CellSize;
+
+        Vector3 localLine =
+            lineWorldPosition -
+            gridOrigin;
+
+        // =====================================================
+        // HORIZONTAL
+        // =====================================================
+
+        if (direction ==
+            CuttingLine.CutDirection.Horizontal)
         {
-            Vector2Int position =
-                cell.GridPosition;
+            float boundaryFloat =
+                localLine.y / cellSize;
 
-            Vector2Int neighbourPosition;
-
-            // =================================================
-            // HORIZONTAL CUT
-            // =================================================
-
-            if (direction ==
-                CuttingLine.CutDirection.Horizontal)
-            {
-                if (position.y !=
-                    linePosition.y - 1)
-                {
-                    continue;
-                }
-
-                neighbourPosition =
-                    position +
-                    Vector2Int.up;
-            }
-
-            // =================================================
-            // VERTICAL CUT
-            // =================================================
-
-            else
-            {
-                if (position.x !=
-                    linePosition.x - 1)
-                {
-                    continue;
-                }
-
-                neighbourPosition =
-                    position +
-                    Vector2Int.right;
-            }
-
-            BodyCell neighbour =
-                FindCellAt(
-                    cells,
-                    neighbourPosition
+            int boundary =
+                Mathf.RoundToInt(
+                    boundaryFloat
                 );
 
-            if (neighbour == null)
-                continue;
+            if (boundary < 0 ||
+                boundary > gridManager.Height)
+            {
+                return result;
+            }
 
-            result.Add(
-                new Connection(
-                    cell,
-                    neighbour
-                )
-            );
+            foreach (BodyCell cell in cells)
+            {
+                if (cell == null)
+                    continue;
+
+                Vector2Int position =
+                    cell.GridPosition;
+
+                // Cell harus berada tepat di bawah garis
+                if (position.y != boundary - 1)
+                    continue;
+
+                Vector2Int abovePosition =
+                    position + Vector2Int.up;
+
+                BodyCell above =
+                    FindCellAt(
+                        cells,
+                        abovePosition
+                    );
+
+                if (above == null)
+                    continue;
+
+                // Pastikan benar-benar adjacent
+                if (above.GridPosition.y !=
+                    position.y + 1)
+                {
+                    continue;
+                }
+
+                result.Add(
+                    new Connection(
+                        cell,
+                        above
+                    )
+                );
+            }
+        }
+
+        // =====================================================
+        // VERTICAL
+        // =====================================================
+
+        else
+        {
+            float boundaryFloat =
+                localLine.x / cellSize;
+
+            int boundary =
+                Mathf.RoundToInt(
+                    boundaryFloat
+                );
+
+            if (boundary < 0 ||
+                boundary > gridManager.Width)
+            {
+                return result;
+            }
+
+            foreach (BodyCell cell in cells)
+            {
+                if (cell == null)
+                    continue;
+
+                Vector2Int position =
+                    cell.GridPosition;
+
+                // Cell harus berada tepat di kiri garis
+                if (position.x != boundary - 1)
+                    continue;
+
+                Vector2Int rightPosition =
+                    position + Vector2Int.right;
+
+                BodyCell right =
+                    FindCellAt(
+                        cells,
+                        rightPosition
+                    );
+
+                if (right == null)
+                    continue;
+
+                if (right.GridPosition.x !=
+                    position.x + 1)
+                {
+                    continue;
+                }
+
+                result.Add(
+                    new Connection(
+                        cell,
+                        right
+                    )
+                );
+            }
         }
 
         return result;
@@ -316,8 +419,12 @@ public class BodyCutter : MonoBehaviour
 
         BodyCell head = null;
 
+        // Cari Head
         foreach (BodyCell cell in cells)
         {
+            if (cell == null)
+                continue;
+
             if (cell.IsHead)
             {
                 head = cell;
@@ -327,8 +434,9 @@ public class BodyCutter : MonoBehaviour
 
         if (head == null)
         {
-            Debug.LogWarning(
-                "BodyCutter: Head tidak ditemukan."
+            Debug.LogError(
+                "BodyCutter: Head tidak ditemukan " +
+                "di dalam BodyCell player."
             );
 
             return visited;
@@ -369,6 +477,7 @@ public class BodyCutter : MonoBehaviour
                 if (neighbour == null)
                     continue;
 
+                // Connection diputus oleh cutter
                 if (IsConnectionCut(
                         current,
                         neighbour,
@@ -403,9 +512,13 @@ public class BodyCutter : MonoBehaviour
         HashSet<BodyCell> alreadyGrouped =
             new HashSet<BodyCell>();
 
-        foreach (BodyCell startingCell
-                 in allCells)
+        foreach (BodyCell startingCell in allCells)
         {
+            if (startingCell == null)
+                continue;
+
+            // Cell yang masih terhubung ke Head
+            // bukan detached.
             if (connectedToHead.Contains(
                     startingCell))
             {
@@ -418,19 +531,23 @@ public class BodyCutter : MonoBehaviour
                 continue;
             }
 
+            // =================================================
+            // HEAD TIDAK BOLEH MASUK DETACHED
+            // =================================================
+
+            if (startingCell.IsHead)
+            {
+                continue;
+            }
+
             List<BodyCell> group =
                 new List<BodyCell>();
 
             Queue<BodyCell> queue =
                 new Queue<BodyCell>();
 
-            queue.Enqueue(
-                startingCell
-            );
-
-            alreadyGrouped.Add(
-                startingCell
-            );
+            queue.Enqueue(startingCell);
+            alreadyGrouped.Add(startingCell);
 
             Vector2Int[] directions =
             {
@@ -445,7 +562,11 @@ public class BodyCutter : MonoBehaviour
                 BodyCell current =
                     queue.Dequeue();
 
-                group.Add(current);
+                // Head tidak boleh dimasukkan
+                if (!current.IsHead)
+                {
+                    group.Add(current);
+                }
 
                 foreach (Vector2Int direction
                          in directions)
@@ -461,6 +582,9 @@ public class BodyCutter : MonoBehaviour
                         );
 
                     if (neighbour == null)
+                        continue;
+
+                    if (neighbour.IsHead)
                         continue;
 
                     if (IsConnectionCut(
@@ -483,13 +607,8 @@ public class BodyCutter : MonoBehaviour
                         continue;
                     }
 
-                    alreadyGrouped.Add(
-                        neighbour
-                    );
-
-                    queue.Enqueue(
-                        neighbour
-                    );
+                    alreadyGrouped.Add(neighbour);
+                    queue.Enqueue(neighbour);
                 }
             }
 
@@ -541,9 +660,9 @@ public class BodyCutter : MonoBehaviour
                 detachedObject.AddComponent<DetachedBody>();
         }
 
-        // =====================================================
-        // PINDAHKAN SEMUA CELL
-        // =====================================================
+        // -----------------------------------------------------
+        // MOVE CELLS
+        // -----------------------------------------------------
 
         foreach (BodyCell cell in cells)
         {
@@ -553,26 +672,39 @@ public class BodyCutter : MonoBehaviour
             Vector2Int gridPosition =
                 cell.GridPosition;
 
+            Vector3 worldPosition =
+                gridManager.GridToWorld(
+                    gridPosition
+                );
+
             cell.transform.SetParent(
                 detachedObject.transform,
                 true
             );
 
             cell.transform.position =
-                gridManager.GridToWorld(
-                    gridPosition
-                );
+                worldPosition;
 
             cell.SetGridPosition(
                 gridPosition
             );
 
-            detachedBody.RegisterCell(
-                cell
-            );
+            cell.HideAllSides();
+
+            // Collider tetap aktif
+            Collider2D[] colliders =
+                cell.GetComponentsInChildren<Collider2D>(
+                    true
+                );
+
+            foreach (Collider2D collider in colliders)
+            {
+                collider.enabled = true;
+            }
+
+            detachedBody.RegisterCell(cell);
         }
 
-        // Pastikan detached body tidak ikut Player
         detachedObject.transform.SetParent(
             null,
             true
@@ -582,23 +714,10 @@ public class BodyCutter : MonoBehaviour
             $"Detached group dibuat: " +
             $"{cells.Count} cells."
         );
-
-        string groupInfo = "";
-
-        foreach (BodyCell cell in cells)
-        {
-            groupInfo +=
-                $"{cell.name} " +
-                $"[{cell.GridPosition}] | ";
-        }
-
-        Debug.Log(
-            $"Group contents: {groupInfo}"
-        );
     }
 
     // =========================================================
-    // FIND CELL AT POSITION
+    // FIND CELL
     // =========================================================
 
     private BodyCell FindCellAt(
@@ -621,7 +740,7 @@ public class BodyCutter : MonoBehaviour
     }
 
     // =========================================================
-    // CHECK CUT CONNECTION
+    // CHECK CONNECTION CUT
     // =========================================================
 
     private bool IsConnectionCut(

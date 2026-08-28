@@ -1,31 +1,98 @@
+
 using UnityEngine;
 
 public class BodyCell : MonoBehaviour
 {
-    // Bikin daftar tipe blok
-    public enum TipeBlok { Polos, Motif, Kepala }
+    // =========================================================
+    // TIPE BLOK
+    // =========================================================
+
+    public enum TipeBlok
+    {
+        Polos,
+        Motif,
+        Kepala
+    }
 
     [Header("Tipe Jeli")]
-    [Tooltip("Pilih jeli ini jenisnya apa")]
-    public TipeBlok tipeBlok = TipeBlok.Polos;
-    
+    [Tooltip("Pilih jenis jeli ini.")]
+    [SerializeField]
+    private TipeBlok tipeBlok = TipeBlok.Polos;
+
+    public TipeBlok TipeBlokSaatIni =>
+        tipeBlok;
+
+    // =========================================================
+    // SPRITE
+    // =========================================================
+
+    [Header("Sprite Berdasarkan Tipe")]
+
+    [SerializeField]
+    private Sprite polosSprite;
+
+    [SerializeField]
+    private Sprite motifSprite;
+
+    [SerializeField]
+    private Sprite kepalaSprite;
+
+    // =========================================================
+    // UKURAN SPRITE
+    // =========================================================
+
+    [Header("Ukuran Sprite")]
+
+    [Tooltip("Ukuran sprite untuk Polos dan Motif.")]
+    [SerializeField]
+    private float normalScale = 1.35f;
+
+    [Tooltip("Ukuran sprite untuk Kepala.")]
+    [SerializeField]
+    private float headScale = 1.35f;
+
+    // =========================================================
+    // REFERENCES
+    // =========================================================
+
     [Header("References")]
-    [SerializeField] private GridManager gridManager;
+
+    [SerializeField]
+    private GridManager gridManager;
 
     [Header("Body")]
-    [SerializeField] private bool isHead;
-    [SerializeField] private SpriteRenderer spriteRenderer;
+
+    [SerializeField]
+    private bool isHead;
+
+    [SerializeField]
+    private SpriteRenderer spriteRenderer;
 
     [Header("Sides")]
-    [SerializeField] private BodyCellSide upSide;
-    [SerializeField] private BodyCellSide downSide;
-    [SerializeField] private BodyCellSide leftSide;
-    [SerializeField] private BodyCellSide rightSide;
+
+    [SerializeField]
+    private BodyCellSide upSide;
+
+    [SerializeField]
+    private BodyCellSide downSide;
+
+    [SerializeField]
+    private BodyCellSide leftSide;
+
+    [SerializeField]
+    private BodyCellSide rightSide;
+
+    // =========================================================
+    // DATA
+    // =========================================================
 
     private Vector2Int gridPosition;
 
-    public bool IsHead => isHead;
-    public Vector2Int GridPosition => gridPosition;
+    public bool IsHead =>
+        isHead;
+
+    public Vector2Int GridPosition =>
+        gridPosition;
 
     // =========================================================
     // START
@@ -38,6 +105,22 @@ public class BodyCell : MonoBehaviour
             gridManager =
                 FindFirstObjectByType<GridManager>();
         }
+
+        // =====================================================
+        // HEAD
+        // =====================================================
+
+        UpdateHeadState();
+
+        // =====================================================
+        // SPRITE
+        // =====================================================
+
+        UpdateSprite();
+
+        // =====================================================
+        // GRID
+        // =====================================================
 
         if (gridManager != null)
         {
@@ -52,7 +135,104 @@ public class BodyCell : MonoBehaviour
                 );
         }
 
+        // =====================================================
+        // SIDES
+        // =====================================================
+
         SetupSides();
+    }
+
+    // =========================================================
+    // ON VALIDATE
+    // =========================================================
+
+    private void OnValidate()
+    {
+        UpdateHeadState();
+        UpdateSprite();
+    }
+
+    // =========================================================
+    // UPDATE HEAD STATE
+    // =========================================================
+
+    private void UpdateHeadState()
+    {
+        isHead =
+            tipeBlok == TipeBlok.Kepala;
+    }
+
+    // =========================================================
+    // UPDATE SPRITE
+    // =========================================================
+
+    private void UpdateSprite()
+    {
+        if (spriteRenderer == null)
+            return;
+
+        // =====================================================
+        // SPRITE
+        // =====================================================
+
+        switch (tipeBlok)
+        {
+            case TipeBlok.Polos:
+
+                spriteRenderer.sprite =
+                    polosSprite;
+
+                break;
+
+            case TipeBlok.Motif:
+
+                spriteRenderer.sprite =
+                    motifSprite;
+
+                break;
+
+            case TipeBlok.Kepala:
+
+                spriteRenderer.sprite =
+                    kepalaSprite;
+
+                break;
+        }
+
+        // =====================================================
+        // SCALE
+        // =====================================================
+
+        float scale =
+            isHead
+                ? headScale
+                : normalScale;
+
+        spriteRenderer.transform.localScale =
+            Vector3.one * scale;
+    }
+
+    // =========================================================
+    // SET TIPE
+    // =========================================================
+
+    public void SetTipeBlok(
+        TipeBlok tipe
+    )
+    {
+        tipeBlok = tipe;
+
+        UpdateHeadState();
+        UpdateSprite();
+    }
+
+    // =========================================================
+    // GET TIPE
+    // =========================================================
+
+    public TipeBlok GetTipeBlok()
+    {
+        return tipeBlok;
     }
 
     // =========================================================
@@ -62,28 +242,36 @@ public class BodyCell : MonoBehaviour
     private void SetupSides()
     {
         if (upSide != null)
+        {
             upSide.Setup(
                 this,
                 Vector2Int.up
             );
+        }
 
         if (downSide != null)
+        {
             downSide.Setup(
                 this,
                 Vector2Int.down
             );
+        }
 
         if (leftSide != null)
+        {
             leftSide.Setup(
                 this,
                 Vector2Int.left
             );
+        }
 
         if (rightSide != null)
+        {
             rightSide.Setup(
                 this,
                 Vector2Int.right
             );
+        }
 
         HideAllSides();
     }
@@ -96,19 +284,14 @@ public class BodyCell : MonoBehaviour
     {
         isHead = value;
 
-        if (spriteRenderer == null)
-            return;
+        if (value)
+        {
+            tipeBlok =
+                TipeBlok.Kepala;
+        }
 
-        if (isHead)
-        {
-            spriteRenderer.transform.localScale =
-                Vector3.one * 0.8f;
-        }
-        else
-        {
-            spriteRenderer.transform.localScale =
-                Vector3.one;
-        }
+        UpdateHeadState();
+        UpdateSprite();
     }
 
     // =========================================================
@@ -127,7 +310,8 @@ public class BodyCell : MonoBehaviour
     }
 
     public void SetGridPosition(
-        Vector2Int position)
+        Vector2Int position
+    )
     {
         gridPosition = position;
     }
@@ -255,7 +439,7 @@ public class BodyCell : MonoBehaviour
         }
 
         // =====================================================
-        // TARGET ADALAH BAGIAN DARI DETACHED BODY
+        // TARGET DETACHED BODY
         // =====================================================
 
         DetachedBody detachedBody =
@@ -325,7 +509,7 @@ public class BodyCell : MonoBehaviour
         }
 
         // =====================================================
-        // SAFETY CHECK
+        // DETACHED SAFETY
         // =====================================================
 
         DetachedBody detachedBody =
@@ -415,3 +599,4 @@ public class BodyCell : MonoBehaviour
         );
     }
 }
+
