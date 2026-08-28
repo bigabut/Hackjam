@@ -16,6 +16,9 @@ public class GridBodyMovement : MonoBehaviour
     [SerializeField] private float holdDelay = 0.2f;
     [SerializeField] private float repeatRate = 0.1f;
 
+    [Header("Collision")]
+    [SerializeField] private float collisionSize = 0.8f;
+
     private Vector2Int bodyPosition;
     private Vector2Int targetPosition;
 
@@ -24,8 +27,7 @@ public class GridBodyMovement : MonoBehaviour
     private Vector2Int heldDirection;
     private float holdTimer;
 
-    // Semua posisi BodyCell relatif terhadap Head.
-    private List<Vector2Int> bodyCells =
+    private readonly List<Vector2Int> bodyCells =
         new List<Vector2Int>();
 
     // =========================================================
@@ -63,10 +65,6 @@ public class GridBodyMovement : MonoBehaviour
 
     private void Start()
     {
-        // -----------------------------------------------------
-        // GRID MANAGER
-        // -----------------------------------------------------
-
         if (gridManager == null)
         {
             gridManager =
@@ -79,12 +77,9 @@ public class GridBodyMovement : MonoBehaviour
                 $"{name}: GridManager tidak ditemukan."
             );
 
+            enabled = false;
             return;
         }
-
-        // -----------------------------------------------------
-        // FIND HEAD
-        // -----------------------------------------------------
 
         FindHeadCell();
 
@@ -93,47 +88,26 @@ public class GridBodyMovement : MonoBehaviour
             Debug.LogError(
                 $"{name}: Head BodyCell tidak ditemukan."
             );
-        }
 
-        // -----------------------------------------------------
-        // BODY POSITION
-        // -----------------------------------------------------
+            return;
+        }
 
         bodyPosition =
             gridManager.WorldToGrid(
-                transform.position
+                headCell.transform.position
             );
 
-        // Kalau Head ditemukan, gunakan posisi Head
-        // sebagai posisi utama body.
-        if (headCell != null)
-        {
-            bodyPosition =
-                gridManager.WorldToGrid(
-                    headCell.transform.position
-                );
-
-            transform.position =
-                gridManager.GridToWorld(
-                    bodyPosition
-                );
-        }
-        else
-        {
-            transform.position =
-                gridManager.GridToWorld(
-                    bodyPosition
-                );
-        }
+        transform.position =
+            gridManager.GridToWorld(
+                bodyPosition
+            );
 
         targetPosition =
             bodyPosition;
 
-        // -----------------------------------------------------
-        // INITIALIZE BODY
-        // -----------------------------------------------------
-
         InitializeExistingBody();
+
+        UpdateAllCellGridPositions();
     }
 
     // =========================================================
@@ -155,14 +129,15 @@ public class GridBodyMovement : MonoBehaviour
 
     private void FindHeadCell()
     {
-        // Kalau sudah diassign manual dan masih valid
         if (headCell != null)
         {
-            if (headCell.transform.IsChildOf(transform) ||
-                headCell.transform == transform)
-            {
+            GridBodyMovement parentBody =
+                headCell.GetComponentInParent<
+                    GridBodyMovement
+                >();
+
+            if (parentBody == this)
                 return;
-            }
 
             headCell = null;
         }
@@ -181,10 +156,6 @@ public class GridBodyMovement : MonoBehaviour
                 continue;
 
             headCell = cell;
-
-            Debug.Log(
-                $"{name}: Head ditemukan -> {cell.name}"
-            );
 
             return;
         }
@@ -208,23 +179,15 @@ public class GridBodyMovement : MonoBehaviour
             if (cell == null)
                 continue;
 
-            // -------------------------------------------------
-            // POSITION
-            // -------------------------------------------------
-
             Vector2Int gridPosition =
                 gridManager.WorldToGrid(
                     cell.transform.position
                 );
 
-            // -------------------------------------------------
-            // HEAD
-            // -------------------------------------------------
-
-            if (cell.IsHead)
+            if (cell == headCell ||
+                cell.IsHead)
             {
                 headCell = cell;
-
                 gridPosition =
                     bodyPosition;
             }
@@ -232,10 +195,6 @@ public class GridBodyMovement : MonoBehaviour
             cell.SetGridPosition(
                 gridPosition
             );
-
-            // -------------------------------------------------
-            // RELATIVE POSITION
-            // -------------------------------------------------
 
             Vector2Int relative =
                 gridPosition -
@@ -247,17 +206,13 @@ public class GridBodyMovement : MonoBehaviour
             }
         }
 
-        // Head harus selalu berada pada relative (0,0)
-        if (!bodyCells.Contains(Vector2Int.zero))
+        if (!bodyCells.Contains(
+                Vector2Int.zero))
         {
-            bodyCells.Add(Vector2Int.zero);
+            bodyCells.Add(
+                Vector2Int.zero
+            );
         }
-
-        Debug.Log(
-            $"{name}: Initialized " +
-            $"{bodyCells.Count} BodyCells. " +
-            $"Head = {(headCell != null ? headCell.name : "NULL")}"
-        );
     }
 
     // =========================================================
@@ -269,10 +224,6 @@ public class GridBodyMovement : MonoBehaviour
         Vector2Int direction =
             GetInputDirection();
 
-        // -----------------------------------------------------
-        // NO INPUT
-        // -----------------------------------------------------
-
         if (direction == Vector2Int.zero)
         {
             heldDirection =
@@ -282,10 +233,6 @@ public class GridBodyMovement : MonoBehaviour
 
             return;
         }
-
-        // -----------------------------------------------------
-        // NEW DIRECTION
-        // -----------------------------------------------------
 
         if (direction != heldDirection)
         {
@@ -303,10 +250,6 @@ public class GridBodyMovement : MonoBehaviour
 
             return;
         }
-
-        // -----------------------------------------------------
-        // HOLD
-        // -----------------------------------------------------
 
         holdTimer +=
             Time.deltaTime;
@@ -355,10 +298,6 @@ public class GridBodyMovement : MonoBehaviour
         if (isMoving)
             return;
 
-        // -----------------------------------------------------
-        // COUNTER
-        // -----------------------------------------------------
-
         if (GameCounter.Instance != null)
         {
             if (!GameCounter.Instance.CanMove())
@@ -371,17 +310,13 @@ public class GridBodyMovement : MonoBehaviour
             }
         }
 
-        // -----------------------------------------------------
-        // NEW BODY POSITION
-        // -----------------------------------------------------
-
         Vector2Int newPosition =
             bodyPosition +
             direction;
 
-        // -----------------------------------------------------
+        // =====================================================
         // GRID BOUNDARY
-        // -----------------------------------------------------
+        // =====================================================
 
         foreach (Vector2Int relativeCell
                  in bodyCells)
@@ -402,42 +337,19 @@ public class GridBodyMovement : MonoBehaviour
             }
         }
 
-        // -----------------------------------------------------
-        // OBSTACLE
-        // -----------------------------------------------------
+        // =====================================================
+        // COLLISION
+        // =====================================================
 
-        foreach (Vector2Int relativeCell
-                 in bodyCells)
-        {
-            Vector2Int newCellPosition =
-                newPosition +
-                relativeCell;
-
-            if (IsObstacleAt(
-                    newCellPosition))
-            {
-                Debug.Log(
-                    $"Movement blocked by obstacle at " +
-                    $"{newCellPosition}"
-                );
-
-                return;
-            }
-        }
-
-        // -----------------------------------------------------
-        // DETACHED BODY
-        // -----------------------------------------------------
-
-        if (IsBlockedByDetachedBody(
+        if (IsMovementBlocked(
                 newPosition))
         {
             return;
         }
 
-        // -----------------------------------------------------
+        // =====================================================
         // MOVE
-        // -----------------------------------------------------
+        // =====================================================
 
         bodyPosition =
             newPosition;
@@ -454,17 +366,12 @@ public class GridBodyMovement : MonoBehaviour
     }
 
     // =========================================================
-    // DETACHED BODY CHECK
+    // MOVEMENT COLLISION
     // =========================================================
 
-    private bool IsBlockedByDetachedBody(
+    private bool IsMovementBlocked(
         Vector2Int newBodyPosition)
     {
-        BodyCell[] allCells =
-            FindObjectsByType<BodyCell>(
-                FindObjectsSortMode.None
-            );
-
         foreach (Vector2Int relativeCell
                  in bodyCells)
         {
@@ -472,50 +379,9 @@ public class GridBodyMovement : MonoBehaviour
                 newBodyPosition +
                 relativeCell;
 
-            foreach (BodyCell otherCell
-                     in allCells)
+            if (IsSolidAt(
+                    newCellPosition))
             {
-                if (otherCell == null)
-                    continue;
-
-                // -------------------------------------------------
-                // BODY SENDIRI
-                // -------------------------------------------------
-
-                if (otherCell.transform.IsChildOf(
-                        transform))
-                {
-                    continue;
-                }
-
-                // -------------------------------------------------
-                // HEAD
-                // -------------------------------------------------
-
-                if (otherCell.IsHead)
-                {
-                    continue;
-                }
-
-                // -------------------------------------------------
-                // POSITION
-                // -------------------------------------------------
-
-                Vector2Int otherPosition =
-                    otherCell.GridPosition;
-
-                if (newCellPosition !=
-                    otherPosition)
-                {
-                    continue;
-                }
-
-                Debug.Log(
-                    $"Movement blocked by detached body: " +
-                    $"{otherCell.name} at " +
-                    $"{otherPosition}"
-                );
-
                 return true;
             }
         }
@@ -524,10 +390,10 @@ public class GridBodyMovement : MonoBehaviour
     }
 
     // =========================================================
-    // OBSTACLE
+    // CHECK SOLID OBJECT
     // =========================================================
 
-    private bool IsObstacleAt(
+    private bool IsSolidAt(
         Vector2Int gridPosition)
     {
         Vector3 worldPosition =
@@ -535,12 +401,14 @@ public class GridBodyMovement : MonoBehaviour
                 gridPosition
             );
 
+        float size =
+            gridManager.CellSize *
+            collisionSize;
+
         Collider2D[] hits =
             Physics2D.OverlapBoxAll(
                 worldPosition,
-                Vector2.one *
-                gridManager.CellSize *
-                0.8f,
+                Vector2.one * size,
                 0f
             );
 
@@ -549,21 +417,108 @@ public class GridBodyMovement : MonoBehaviour
             if (hit == null)
                 continue;
 
-            // -------------------------------------------------
-            // BODY CELL
-            // -------------------------------------------------
+            // =================================================
+            // TRIGGER
+            // =================================================
 
-            BodyCell bodyCell =
-                hit.GetComponentInParent<BodyCell>();
-
-            if (bodyCell != null)
+            if (hit.isTrigger)
             {
                 continue;
             }
 
-            // -------------------------------------------------
+            // =================================================
+            // BODY CELL
+            // =================================================
+
+            BodyCell bodyCell =
+                hit.GetComponentInParent<
+                    BodyCell
+                >();
+
+            if (bodyCell != null)
+            {
+                // Body sendiri tidak menghalangi
+                if (bodyCell.transform.IsChildOf(
+                        transform))
+                {
+                    continue;
+                }
+
+                // Detached body memang menghalangi
+                DetachedBody detachedBody =
+                    bodyCell.GetComponentInParent<
+                        DetachedBody
+                    >();
+
+                if (detachedBody != null)
+                {
+                    Debug.Log(
+                        $"Movement blocked by " +
+                        $"DetachedBody: {bodyCell.name}"
+                    );
+
+                    return true;
+                }
+
+                // BodyCell standalone juga menghalangi
+                Debug.Log(
+                    $"Movement blocked by BodyCell: " +
+                    $"{bodyCell.name}"
+                );
+
+                return true;
+            }
+
+            // =================================================
+            // DETACHED BODY
+            // =================================================
+
+            DetachedBody detached =
+                hit.GetComponentInParent<
+                    DetachedBody
+                >();
+
+            if (detached != null)
+            {
+                Debug.Log(
+                    $"Movement blocked by " +
+                    $"DetachedBody: {detached.name}"
+                );
+
+                return true;
+            }
+
+            // =================================================
+            // PRESSURE PLATE
+            // =================================================
+
+            PressurePlate pressurePlate =
+                hit.GetComponentInParent<
+                    PressurePlate
+                >();
+
+            if (pressurePlate != null)
+            {
+                continue;
+            }
+
+            // =================================================
+            // CUTTING LINE
+            // =================================================
+
+            CuttingLine cuttingLine =
+                hit.GetComponentInParent<
+                    CuttingLine
+                >();
+
+            if (cuttingLine != null)
+            {
+                continue;
+            }
+
+            // =================================================
             // PLAYER
-            // -------------------------------------------------
+            // =================================================
 
             if (hit.transform.IsChildOf(
                     transform))
@@ -571,33 +526,20 @@ public class GridBodyMovement : MonoBehaviour
                 continue;
             }
 
-            // -------------------------------------------------
-            // CUTTING LINE
-            // -------------------------------------------------
+            // =================================================
+            // OTHER NON-SOLID OBJECT
+            // =================================================
 
-            CuttingLine cuttingLine =
-                hit.GetComponentInParent<CuttingLine>();
-
-            if (cuttingLine != null)
+            if (hit.GetComponentInParent<
+                    BodyAttachment
+                >() != null)
             {
                 continue;
             }
 
-            // -------------------------------------------------
-            // DETACHED BODY CONTAINER
-            // -------------------------------------------------
-
-            DetachedBody detachedBody =
-                hit.GetComponentInParent<DetachedBody>();
-
-            if (detachedBody != null)
-            {
-                continue;
-            }
-
-            // -------------------------------------------------
+            // =================================================
             // REAL OBSTACLE
-            // -------------------------------------------------
+            // =================================================
 
             return true;
         }
@@ -642,7 +584,7 @@ public class GridBodyMovement : MonoBehaviour
     }
 
     // =========================================================
-    // UPDATE CELL POSITIONS
+    // UPDATE CELL GRID POSITIONS
     // =========================================================
 
     private void UpdateAllCellGridPositions()
@@ -667,7 +609,6 @@ public class GridBodyMovement : MonoBehaviour
             );
         }
 
-        // Head selalu berada pada posisi body
         if (headCell != null)
         {
             headCell.SetGridPosition(
@@ -677,7 +618,7 @@ public class GridBodyMovement : MonoBehaviour
     }
 
     // =========================================================
-    // REFRESH
+    // REFRESH BODY
     // =========================================================
 
     public void RefreshBodyCells()
@@ -691,15 +632,7 @@ public class GridBodyMovement : MonoBehaviour
         if (gridManager == null)
             return;
 
-        // -----------------------------------------------------
-        // FIND HEAD AGAIN
-        // -----------------------------------------------------
-
         FindHeadCell();
-
-        // -----------------------------------------------------
-        // IF HEAD EXISTS
-        // -----------------------------------------------------
 
         if (headCell != null)
         {
@@ -719,9 +652,7 @@ public class GridBodyMovement : MonoBehaviour
         targetPosition =
             bodyPosition;
 
-        // -----------------------------------------------------
-        // BODY CELLS
-        // -----------------------------------------------------
+        isMoving = false;
 
         bodyCells.Clear();
 
@@ -735,23 +666,17 @@ public class GridBodyMovement : MonoBehaviour
             if (cell == null)
                 continue;
 
-            Vector2Int gridPosition;
+            Vector2Int gridPosition =
+                gridManager.WorldToGrid(
+                    cell.transform.position
+                );
 
-            // Head adalah anchor
             if (cell == headCell ||
                 cell.IsHead)
             {
                 headCell = cell;
-
                 gridPosition =
                     bodyPosition;
-            }
-            else
-            {
-                gridPosition =
-                    gridManager.WorldToGrid(
-                        cell.transform.position
-                    );
             }
 
             cell.SetGridPosition(
@@ -762,15 +687,14 @@ public class GridBodyMovement : MonoBehaviour
                 gridPosition -
                 bodyPosition;
 
-            if (!bodyCells.Contains(relative))
+            if (!bodyCells.Contains(
+                    relative))
             {
-                bodyCells.Add(relative);
+                bodyCells.Add(
+                    relative
+                );
             }
         }
-
-        // -----------------------------------------------------
-        // MAKE SURE HEAD EXISTS IN BODY DATA
-        // -----------------------------------------------------
 
         if (!bodyCells.Contains(
                 Vector2Int.zero))
@@ -779,12 +703,6 @@ public class GridBodyMovement : MonoBehaviour
                 Vector2Int.zero
             );
         }
-
-        Debug.Log(
-            $"{name}: Body refreshed. " +
-            $"Cells = {bodyCells.Count}, " +
-            $"Head = {(headCell != null ? headCell.name : "NULL")}"
-        );
     }
 
     // =========================================================
@@ -806,9 +724,14 @@ public class GridBodyMovement : MonoBehaviour
         if (gridManager == null)
             return false;
 
-        // -----------------------------------------------------
+        Vector2Int gridPosition =
+            gridManager.WorldToGrid(
+                cell.transform.position
+            );
+
+        // =====================================================
         // HEAD
-        // -----------------------------------------------------
+        // =====================================================
 
         if (cell.IsHead)
         {
@@ -829,12 +752,9 @@ public class GridBodyMovement : MonoBehaviour
             return true;
         }
 
-        // -----------------------------------------------------
+        // =====================================================
         // NORMAL CELL
-        // -----------------------------------------------------
-
-        Vector2Int gridPosition =
-            cell.GridPosition;
+        // =====================================================
 
         Vector2Int relative =
             gridPosition -
@@ -843,6 +763,17 @@ public class GridBodyMovement : MonoBehaviour
         if (bodyCells.Contains(
                 relative))
         {
+            return false;
+        }
+
+        if (!gridManager.IsInsideGrid(
+                gridPosition))
+        {
+            Debug.LogWarning(
+                $"Tidak bisa attach {cell.name}. " +
+                $"Posisi {gridPosition} di luar grid."
+            );
+
             return false;
         }
 
@@ -887,7 +818,8 @@ public class GridBodyMovement : MonoBehaviour
         if (gridManager == null)
             return;
 
-        Gizmos.color = Color.green;
+        Gizmos.color =
+            Color.green;
 
         foreach (Vector2Int relative
                  in bodyCells)

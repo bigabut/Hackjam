@@ -3,18 +3,40 @@ using UnityEngine;
 public class GridManager : MonoBehaviour
 {
     [Header("Grid Size")]
+    [Min(1)]
     [SerializeField] private int width = 30;
+
+    [Min(1)]
     [SerializeField] private int height = 20;
 
     [Header("Cell")]
+    [Min(0.01f)]
     [SerializeField] private float cellSize = 1f;
 
     [Header("Grid Visual")]
     [SerializeField] private GameObject gridLinePrefab;
 
+    [SerializeField] private Transform gridVisualParent;
+
+    // =========================================================
+    // PUBLIC
+    // =========================================================
+
     public int Width => width;
     public int Height => height;
     public float CellSize => cellSize;
+
+    public Vector2 GridSize =>
+        new Vector2(
+            width,
+            height
+        );
+
+    public Vector2 WorldSize =>
+        new Vector2(
+            width * cellSize,
+            height * cellSize
+        );
 
     // =========================================================
     // START
@@ -26,10 +48,11 @@ public class GridManager : MonoBehaviour
     }
 
     // =========================================================
-    // CELL CENTER
+    // GRID TO WORLD
     // =========================================================
 
-    public Vector3 GridToWorld(Vector2Int gridPosition)
+    public Vector3 GridToWorld(
+        Vector2Int gridPosition)
     {
         return transform.position +
                new Vector3(
@@ -62,7 +85,7 @@ public class GridManager : MonoBehaviour
     }
 
     // =========================================================
-    // GRID BOUNDARY
+    // GRID BOUNDARY TO WORLD
     // =========================================================
 
     public Vector3 GridBoundaryToWorld(
@@ -84,20 +107,89 @@ public class GridManager : MonoBehaviour
     public bool IsInsideGrid(
         Vector2Int position)
     {
-        return position.x >= 0 &&
-               position.x < Width &&
-               position.y >= 0 &&
-               position.y < Height;
+        return
+            position.x >= 0 &&
+            position.x < width &&
+            position.y >= 0 &&
+            position.y < height;
     }
 
     // =========================================================
-    // GRID VISUAL
+    // CLAMP GRID POSITION
+    // =========================================================
+
+    public Vector2Int ClampGridPosition(
+        Vector2Int position)
+    {
+        return new Vector2Int(
+            Mathf.Clamp(
+                position.x,
+                0,
+                width - 1
+            ),
+
+            Mathf.Clamp(
+                position.y,
+                0,
+                height - 1
+            )
+        );
+    }
+
+    // =========================================================
+    // GET GRID BOUNDS
+    // =========================================================
+
+    public Bounds GetGridBounds()
+    {
+        Vector3 center =
+            transform.position +
+            new Vector3(
+                width * cellSize * 0.5f,
+                height * cellSize * 0.5f,
+                0f
+            );
+
+        Vector3 size =
+            new Vector3(
+                width * cellSize,
+                height * cellSize,
+                0.1f
+            );
+
+        return new Bounds(
+            center,
+            size
+        );
+    }
+
+    // =========================================================
+    // CHECK WORLD POSITION
+    // =========================================================
+
+    public bool IsWorldInsideGrid(
+        Vector3 worldPosition)
+    {
+        return IsInsideGrid(
+            WorldToGrid(worldPosition)
+        );
+    }
+
+    // =========================================================
+    // GENERATE GRID VISUAL
     // =========================================================
 
     private void GenerateGridVisual()
     {
         if (gridLinePrefab == null)
             return;
+
+        ClearGridVisual();
+
+        Transform parent =
+            gridVisualParent != null
+                ? gridVisualParent
+                : transform;
 
         // =====================================================
         // VERTICAL
@@ -108,13 +200,13 @@ public class GridManager : MonoBehaviour
             GameObject line =
                 Instantiate(
                     gridLinePrefab,
-                    transform
+                    parent
                 );
 
             line.transform.localPosition =
                 new Vector3(
                     x * cellSize,
-                    (height * cellSize) / 2f,
+                    height * cellSize * 0.5f,
                     0f
                 );
 
@@ -135,12 +227,12 @@ public class GridManager : MonoBehaviour
             GameObject line =
                 Instantiate(
                     gridLinePrefab,
-                    transform
+                    parent
                 );
 
             line.transform.localPosition =
                 new Vector3(
-                    (width * cellSize) / 2f,
+                    width * cellSize * 0.5f,
                     y * cellSize,
                     0f
                 );
@@ -155,6 +247,80 @@ public class GridManager : MonoBehaviour
     }
 
     // =========================================================
+    // CLEAR GRID VISUAL
+    // =========================================================
+
+    private void ClearGridVisual()
+    {
+        Transform parent =
+            gridVisualParent != null
+                ? gridVisualParent
+                : transform;
+
+        for (int i = parent.childCount - 1;
+             i >= 0;
+             i--)
+        {
+            Transform child =
+                parent.GetChild(i);
+
+            if (child == null)
+                continue;
+
+            // Jangan hapus object selain grid visual
+            if (child.gameObject == gameObject)
+                continue;
+
+            if (Application.isPlaying)
+            {
+                Destroy(
+                    child.gameObject
+                );
+            }
+            else
+            {
+                DestroyImmediate(
+                    child.gameObject
+                );
+            }
+        }
+    }
+
+    // =========================================================
+    // REFRESH VISUAL
+    // =========================================================
+
+    public void RefreshGridVisual()
+    {
+        GenerateGridVisual();
+    }
+
+    // =========================================================
+    // VALIDATE
+    // =========================================================
+
+    private void OnValidate()
+    {
+        width =
+            Mathf.Max(
+                1,
+                width
+            );
+
+        height =
+            Mathf.Max(
+                1,
+                height
+            );
+
+        cellSize =
+            Mathf.Max(
+                0.01f,
+                cellSize
+            );
+    }
+
+    // =========================================================
     // GIZMOS
     // =========================================================
 
@@ -166,7 +332,10 @@ public class GridManager : MonoBehaviour
         Gizmos.color =
             Color.gray;
 
-        // Vertical
+        // =====================================================
+        // VERTICAL
+        // =====================================================
+
         for (int x = 0; x <= width; x++)
         {
             Vector3 start =
@@ -191,7 +360,10 @@ public class GridManager : MonoBehaviour
             );
         }
 
-        // Horizontal
+        // =====================================================
+        // HORIZONTAL
+        // =====================================================
+
         for (int y = 0; y <= height; y++)
         {
             Vector3 start =
@@ -215,5 +387,14 @@ public class GridManager : MonoBehaviour
                 end
             );
         }
+
+        // =====================================================
+        // BORDER
+        // =====================================================
+
+        Gizmos.DrawWireCube(
+            GetGridBounds().center,
+            GetGridBounds().size
+        );
     }
 }

@@ -2,7 +2,11 @@ using UnityEngine;
 
 public class PressurePlate : MonoBehaviour
 {
-    public enum PintuTipe { Putar, Geser } 
+    public enum PintuTipe
+    {
+        Putar,
+        Geser
+    }
 
     [Header("References")]
     [SerializeField] private GameObject door;
@@ -10,124 +14,342 @@ public class PressurePlate : MonoBehaviour
 
     [Header("Settings Utama")]
     [SerializeField] private PintuTipe tipePintu = PintuTipe.Putar;
-    [SerializeField] private bool stayOpen = false; 
+    [SerializeField] private bool stayOpen = false;
 
-    [Header("Visual Injakan (Ganti Gambar)")]
-    [Tooltip("Komponen visual plat. (Otomatis terisi jika dibiarkan kosong)")]
+    [Header("Visual Injakan")]
+    [Tooltip("Komponen visual plat.")]
     [SerializeField] private SpriteRenderer plateVisual;
-    [Tooltip("Gambar saat plat NGANGGUR (belum diinjak)")]
+
+    [Tooltip("Gambar saat plat belum diinjak.")]
     [SerializeField] private Sprite spriteNormal;
-    [Tooltip("Gambar saat plat DITEKAN")]
+
+    [Tooltip("Gambar saat plat ditekan.")]
     [SerializeField] private Sprite spriteDitekan;
 
     [Header("Audio (SFX)")]
     [SerializeField] private string openSFX = "Plate Door";
-    [SerializeField] private string closeSFX = ""; 
+    [SerializeField] private string closeSFX = "";
 
     [Header("Settings Pintu Putar")]
-    [SerializeField] private float openRotationAmount = 90f; 
+    [SerializeField] private float openRotationAmount = 90f;
 
     [Header("Settings Pintu Geser")]
-    [SerializeField] private Vector3 geserOffset; 
+    [SerializeField] private Vector3 geserOffset;
     [SerializeField] private float kecepatanGeser = 5f;
 
     private Vector2Int plateGridPosition;
-    private bool isDoorOpen = false;
+
+    private bool isDoorOpen;
 
     private Vector3 posisiAwalTertutup;
-    private Quaternion rotasiAwalTertutup; 
+    private Quaternion rotasiAwalTertutup;
+
+    // =========================================================
+    // START
+    // =========================================================
 
     private void Start()
     {
-        if (gridManager == null) gridManager = FindFirstObjectByType<GridManager>();
-        plateGridPosition = gridManager.WorldToGrid(transform.position);
+        // -----------------------------------------------------
+        // GRID MANAGER
+        // -----------------------------------------------------
+
+        if (gridManager == null)
+        {
+            gridManager =
+                FindFirstObjectByType<GridManager>();
+        }
+
+        if (gridManager == null)
+        {
+            Debug.LogError(
+                $"{name}: GridManager tidak ditemukan."
+            );
+
+            return;
+        }
+
+        // -----------------------------------------------------
+        // PLATE POSITION
+        // -----------------------------------------------------
+
+        plateGridPosition =
+            gridManager.WorldToGrid(
+                transform.position
+            );
+
+        // -----------------------------------------------------
+        // DOOR INITIAL POSITION
+        // -----------------------------------------------------
 
         if (door != null)
         {
-            posisiAwalTertutup = door.transform.position;
-            rotasiAwalTertutup = door.transform.rotation; 
+            posisiAwalTertutup =
+                door.transform.position;
+
+            rotasiAwalTertutup =
+                door.transform.rotation;
         }
 
-        // Otomatis mencari SpriteRenderer di objek ini jika belum dimasukkan
-        if (plateVisual == null) plateVisual = GetComponent<SpriteRenderer>();
+        // -----------------------------------------------------
+        // VISUAL
+        // -----------------------------------------------------
+
+        if (plateVisual == null)
+        {
+            plateVisual =
+                GetComponent<SpriteRenderer>();
+        }
+
+        // Pastikan visual mulai dari kondisi normal.
+        if (plateVisual != null &&
+            spriteNormal != null)
+        {
+            plateVisual.sprite =
+                spriteNormal;
+        }
+
+        isDoorOpen = false;
     }
+
+    // =========================================================
+    // UPDATE
+    // =========================================================
 
     private void Update()
     {
         CheckForPlayer();
 
-        if (door != null && tipePintu == PintuTipe.Geser)
-        {
-            Vector3 targetPosisi = isDoorOpen ? (posisiAwalTertutup + geserOffset) : posisiAwalTertutup;
-            door.transform.position = Vector3.MoveTowards(door.transform.position, targetPosisi, kecepatanGeser * Time.deltaTime);
-        }
+        UpdateSlidingDoor();
     }
+
+    // =========================================================
+    // CHECK PLAYER
+    // =========================================================
 
     private void CheckForPlayer()
     {
+        if (gridManager == null)
+            return;
+
+        GridBodyMovement[] bodies =
+            FindObjectsByType<GridBodyMovement>(
+                FindObjectsSortMode.None
+            );
+
         bool someoneIsOnPlate = false;
-        BodyCell[] allCells = FindObjectsByType<BodyCell>(FindObjectsSortMode.None);
-        
-        foreach (BodyCell cell in allCells)
+
+        foreach (GridBodyMovement body
+                 in bodies)
         {
-            Vector2Int cellPos = gridManager.WorldToGrid(cell.transform.position);
-            if (cellPos == plateGridPosition)
+            if (body == null)
+                continue;
+
+            BodyCell[] bodyCells =
+                body.GetComponentsInChildren<BodyCell>(
+                    true
+                );
+
+            foreach (BodyCell cell
+                     in bodyCells)
             {
-                someoneIsOnPlate = true;
-                break; 
+                if (cell == null)
+                    continue;
+
+                Vector2Int cellPosition =
+                    cell.GridPosition;
+
+                // -------------------------------------------------
+                // FALLBACK
+                // -------------------------------------------------
+                // Kalau GridPosition belum update,
+                // hitung langsung dari world position.
+
+                if (cellPosition !=
+                    plateGridPosition)
+                {
+                    cellPosition =
+                        gridManager.WorldToGrid(
+                            cell.transform.position
+                        );
+                }
+
+                if (cellPosition ==
+                    plateGridPosition)
+                {
+                    someoneIsOnPlate = true;
+                    break;
+                }
             }
+
+            if (someoneIsOnPlate)
+                break;
         }
 
-        if (someoneIsOnPlate && !isDoorOpen) OpenDoor();
-        else if (!someoneIsOnPlate && isDoorOpen && !stayOpen) CloseDoor();
+        // =====================================================
+        // OPEN
+        // =====================================================
+
+        if (someoneIsOnPlate &&
+            !isDoorOpen)
+        {
+            OpenDoor();
+        }
+
+        // =====================================================
+        // CLOSE
+        // =====================================================
+
+        else if (!someoneIsOnPlate &&
+                 isDoorOpen &&
+                 !stayOpen)
+        {
+            CloseDoor();
+        }
     }
+
+    // =========================================================
+    // SLIDING DOOR
+    // =========================================================
+
+    private void UpdateSlidingDoor()
+    {
+        if (door == null)
+            return;
+
+        if (tipePintu != PintuTipe.Geser)
+            return;
+
+        Vector3 targetPosition =
+            isDoorOpen
+                ? posisiAwalTertutup +
+                  geserOffset
+                : posisiAwalTertutup;
+
+        door.transform.position =
+            Vector3.MoveTowards(
+                door.transform.position,
+                targetPosition,
+                kecepatanGeser *
+                Time.deltaTime
+            );
+    }
+
+    // =========================================================
+    // OPEN DOOR
+    // =========================================================
 
     private void OpenDoor()
     {
         isDoorOpen = true;
 
-        // --- GANTI GAMBAR JADI DITEKAN ---
-        if (plateVisual != null && spriteDitekan != null)
+        // -----------------------------------------------------
+        // VISUAL
+        // -----------------------------------------------------
+
+        if (plateVisual != null &&
+            spriteDitekan != null)
         {
-            plateVisual.sprite = spriteDitekan;
+            plateVisual.sprite =
+                spriteDitekan;
         }
+
+        // -----------------------------------------------------
+        // AUDIO
+        // -----------------------------------------------------
 
         if (!string.IsNullOrEmpty(openSFX))
         {
             if (AudioManager.Instance != null)
             {
-                AudioManager.Instance.PlaySFX(openSFX);
+                AudioManager.Instance.PlaySFX(
+                    openSFX
+                );
             }
             else
             {
-                Debug.LogWarning("Pintu terbuka, tapi AudioManager belum terpasang di Scene!");
+                Debug.LogWarning(
+                    $"{name}: Pintu terbuka, " +
+                    $"tetapi AudioManager belum tersedia."
+                );
             }
         }
 
-        if (tipePintu == PintuTipe.Putar && door != null) 
+        // -----------------------------------------------------
+        // ROTATING DOOR
+        // -----------------------------------------------------
+
+        if (tipePintu ==
+                PintuTipe.Putar &&
+            door != null)
         {
-            door.transform.rotation = rotasiAwalTertutup * Quaternion.Euler(0, 0, openRotationAmount);
+            door.transform.rotation =
+                rotasiAwalTertutup *
+                Quaternion.Euler(
+                    0f,
+                    0f,
+                    openRotationAmount
+                );
         }
     }
+
+    // =========================================================
+    // CLOSE DOOR
+    // =========================================================
 
     private void CloseDoor()
     {
         isDoorOpen = false;
 
-        // --- KEMBALIKAN GAMBAR KE NORMAL ---
-        if (plateVisual != null && spriteNormal != null)
+        // -----------------------------------------------------
+        // VISUAL
+        // -----------------------------------------------------
+
+        if (plateVisual != null &&
+            spriteNormal != null)
         {
-            plateVisual.sprite = spriteNormal;
+            plateVisual.sprite =
+                spriteNormal;
         }
+
+        // -----------------------------------------------------
+        // AUDIO
+        // -----------------------------------------------------
 
         if (!string.IsNullOrEmpty(closeSFX))
         {
             if (AudioManager.Instance != null)
             {
-                AudioManager.Instance.PlaySFX(closeSFX);
+                AudioManager.Instance.PlaySFX(
+                    closeSFX
+                );
             }
         }
 
-        if (tipePintu == PintuTipe.Putar && door != null) door.transform.rotation = rotasiAwalTertutup; 
+        // -----------------------------------------------------
+        // ROTATING DOOR
+        // -----------------------------------------------------
+
+        if (tipePintu ==
+                PintuTipe.Putar &&
+            door != null)
+        {
+            door.transform.rotation =
+                rotasiAwalTertutup;
+        }
+    }
+
+    // =========================================================
+    // PUBLIC
+    // =========================================================
+
+    public bool IsDoorOpen()
+    {
+        return isDoorOpen;
+    }
+
+    public Vector2Int GetPlateGridPosition()
+    {
+        return plateGridPosition;
     }
 }
