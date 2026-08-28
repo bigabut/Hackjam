@@ -9,12 +9,11 @@ public class DetachedBody : MonoBehaviour
     private bool isAttaching;
 
     // =========================================================
-    // REGISTER CELL
+    // REGISTER
     // =========================================================
 
     public void RegisterCell(
-        BodyCell cell
-    )
+        BodyCell cell)
     {
         if (cell == null)
             return;
@@ -26,132 +25,37 @@ public class DetachedBody : MonoBehaviour
     }
 
     // =========================================================
-    // REGISTER GROUP
-    // =========================================================
-
-    public void RegisterGroup(
-        List<BodyCell> group,
-        GridManager gridManager
-    )
-    {
-        if (group == null ||
-            group.Count == 0)
-        {
-            return;
-        }
-
-        if (gridManager == null)
-        {
-            Debug.LogError(
-                "DetachedBody: GridManager null."
-            );
-
-            return;
-        }
-
-        cells.Clear();
-
-        // =====================================================
-        // CARI ORIGIN
-        // =====================================================
-
-        Vector2Int minGrid =
-            group[0].GridPosition;
-
-        foreach (BodyCell cell in group)
-        {
-            if (cell == null)
-                continue;
-
-            minGrid.x =
-                Mathf.Min(
-                    minGrid.x,
-                    cell.GridPosition.x
-                );
-
-            minGrid.y =
-                Mathf.Min(
-                    minGrid.y,
-                    cell.GridPosition.y
-                );
-        }
-
-        // =====================================================
-        // LEPAS CONTAINER
-        // =====================================================
-
-        transform.SetParent(
-            null,
-            true
-        );
-
-        transform.position =
-            gridManager.GridToWorld(
-                minGrid
-            );
-
-        // =====================================================
-        // MASUKKAN SEMUA CELL
-        // =====================================================
-
-        foreach (BodyCell cell in group)
-        {
-            if (cell == null)
-                continue;
-
-            Vector2Int relative =
-                cell.GridPosition -
-                minGrid;
-
-            cell.transform.SetParent(
-                transform,
-                false
-            );
-
-            cell.transform.localPosition =
-                new Vector3(
-                    relative.x *
-                    gridManager.CellSize,
-
-                    relative.y *
-                    gridManager.CellSize,
-
-                    0f
-                );
-
-            cell.SetGridPosition(
-                cell.GridPosition
-            );
-
-            RegisterCell(cell);
-        }
-
-        Debug.Log(
-            $"DetachedBody registered " +
-            $"{cells.Count} cells."
-        );
-    }
-
-    // =========================================================
-    // ATTACH ENTIRE GROUP
+    // ATTACH
     // =========================================================
 
     public void AttachToPlayer(
-        Transform player
-    )
+        Transform player)
     {
         if (player == null)
             return;
 
-        // =====================================================
-        // PREVENT DOUBLE ATTACH
-        // =====================================================
-
         if (isAttaching)
+            return;
+
+        if (cells.Count == 0)
         {
-            Debug.Log(
-                $"DetachedBody {name} " +
-                $"sudah sedang di-attach."
+            Debug.LogWarning(
+                $"{name}: Tidak ada cell."
+            );
+
+            return;
+        }
+
+        GridBodyMovement body =
+            player.GetComponent<
+                GridBodyMovement
+            >();
+
+        if (body == null)
+        {
+            Debug.LogError(
+                $"{player.name}: " +
+                $"GridBodyMovement tidak ditemukan."
             );
 
             return;
@@ -159,96 +63,49 @@ public class DetachedBody : MonoBehaviour
 
         isAttaching = true;
 
-        // =====================================================
-        // PLAYER BODY
-        // =====================================================
+        GridManager gridManager =
+            FindFirstObjectByType<GridManager>();
 
-        GridBodyMovement bodyMovement =
-            player.GetComponent<GridBodyMovement>();
-
-        if (bodyMovement == null)
+        if (gridManager == null)
         {
-            Debug.LogError(
-                "Player tidak memiliki " +
-                "GridBodyMovement."
-            );
-
             isAttaching = false;
             return;
         }
 
         // =====================================================
-        // VALIDASI GROUP
+        // COPY
         // =====================================================
 
-        if (cells.Count == 0)
-        {
-            Debug.LogWarning(
-                $"DetachedBody {name} " +
-                $"tidak memiliki cell."
+        List<BodyCell> group =
+            new List<BodyCell>(
+                cells
             );
 
-            isAttaching = false;
-            return;
-        }
-
         // =====================================================
-        // COPY GROUP
+        // REGISTER
         // =====================================================
 
-        List<BodyCell> cellsToAttach =
-            new List<BodyCell>();
-
-        List<Vector2Int> positions =
-            new List<Vector2Int>();
-
-        foreach (BodyCell cell in cells)
+        foreach (BodyCell cell in group)
         {
             if (cell == null)
                 continue;
 
-            cellsToAttach.Add(cell);
-            positions.Add(
-                cell.GridPosition
-            );
-        }
-
-        if (cellsToAttach.Count == 0)
-        {
-            isAttaching = false;
-            return;
-        }
-
-        Debug.Log(
-            $"Attaching DetachedBody {name}. " +
-            $"Total group: " +
-            $"{cellsToAttach.Count} cells."
-        );
-
-        // =====================================================
-        // REGISTER SEMUA CELL
-        // =====================================================
-
-        foreach (BodyCell cell in cellsToAttach)
-        {
-            bodyMovement.RegisterAttachedCell(
+            body.RegisterAttachedCell(
                 cell
             );
         }
 
         // =====================================================
-        // PARENT SEMUA CELL KE PLAYER
+        // PARENT
         // =====================================================
 
-        for (int i = 0;
-             i < cellsToAttach.Count;
-             i++)
+        foreach (BodyCell cell in group)
         {
-            BodyCell cell =
-                cellsToAttach[i];
+            if (cell == null)
+                continue;
 
             Vector2Int gridPosition =
-                positions[i];
+                cell.GridPosition;
 
             cell.transform.SetParent(
                 player,
@@ -256,7 +113,7 @@ public class DetachedBody : MonoBehaviour
             );
 
             cell.transform.position =
-                FindGridWorldPosition(
+                gridManager.GridToWorld(
                     gridPosition
                 );
 
@@ -267,57 +124,46 @@ public class DetachedBody : MonoBehaviour
             cell.HideAllSides();
 
             Collider2D[] colliders =
-                cell.GetComponentsInChildren<Collider2D>(
-                    true
-                );
+                cell.GetComponentsInChildren<
+                    Collider2D
+                >(true);
 
-            foreach (Collider2D collider in colliders)
+            foreach (Collider2D collider
+                     in colliders)
             {
                 collider.enabled = true;
             }
         }
 
         // =====================================================
-        // CLEAR GROUP
+        // REFRESH
+        // =====================================================
+
+        body.RefreshBodyCells();
+
+        // =====================================================
+        // SOUND
+        // =====================================================
+
+        if (AudioManager.Instance != null)
+        {
+            AudioManager.Instance.PlaySFX(
+                "Attach"
+            );
+        }
+
+        // =====================================================
+        // CLEAR + DESTROY
         // =====================================================
 
         cells.Clear();
 
-        // =====================================================
-        // DESTROY CONTAINER
-        // =====================================================
-
         Destroy(gameObject);
 
-        // =====================================================
-        // REFRESH PLAYER BODY
-        // =====================================================
-
-        bodyMovement.RefreshBodyCells();
-
         Debug.Log(
-            $"DetachedBody {name} berhasil " +
-            $"digabungkan sebagai satu group. " +
-            $"Cells: {cellsToAttach.Count}"
-        );
-    }
-
-    // =========================================================
-    // GRID POSITION
-    // =========================================================
-
-    private Vector3 FindGridWorldPosition(
-        Vector2Int gridPosition
-    )
-    {
-        GridManager gridManager =
-            FindFirstObjectByType<GridManager>();
-
-        if (gridManager == null)
-            return transform.position;
-
-        return gridManager.GridToWorld(
-            gridPosition
+            $"DetachedBody {name} " +
+            $"berhasil diattach. " +
+            $"Cells: {group.Count}"
         );
     }
 
@@ -336,8 +182,7 @@ public class DetachedBody : MonoBehaviour
     }
 
     public bool Contains(
-        BodyCell cell
-    )
+        BodyCell cell)
     {
         if (cell == null)
             return false;

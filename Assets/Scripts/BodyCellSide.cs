@@ -57,11 +57,7 @@ public class BodyCellSide : MonoBehaviour,
         isAvailable = available;
         targetCell = target;
 
-        Debug.Log(
-            $"Side {direction} " +
-            $"Available = {available} " +
-            $"Target = {(target != null ? target.name : "NULL")}"
-        );
+        
 
         RefreshVisual();
     }

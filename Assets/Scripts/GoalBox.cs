@@ -1,69 +1,179 @@
+
 using UnityEngine;
 
 public class GoalBox : MonoBehaviour
 {
-    [SerializeField] private GridManager gridManager;
-    
+    [SerializeField]
+    private GridManager gridManager;
+
+    // =========================================================
+    // SYARAT MENANG
+    // =========================================================
+
     [Header("Syarat Menang")]
     [Tooltip("Kotak ini HANYA mau menerima jeli tipe apa?")]
-    public BodyCell.TipeBlok syaratTipe = BodyCell.TipeBlok.Polos;
+    public BodyCell.TipeBlok syaratTipe =
+        BodyCell.TipeBlok.Polos;
 
-    [Header("Visual Asset (Isi dengan gambarmu)")]
-    [SerializeField] private SpriteRenderer spriteRenderer;
-    [SerializeField] private Sprite gambarPolos;
-    [SerializeField] private Sprite gambarMotif;
-    [SerializeField] private Sprite gambarKepala;
+    // =========================================================
+    // VISUAL
+    // =========================================================
+
+    [Header("Visual Asset")]
+
+    [SerializeField]
+    private SpriteRenderer spriteRenderer;
+
+    [SerializeField]
+    private Sprite gambarPolos;
+
+    [SerializeField]
+    private Sprite gambarMotif;
+
+    [SerializeField]
+    private Sprite gambarKepala;
+
+    // =========================================================
+    // DATA
+    // =========================================================
 
     private Vector2Int gridPosition;
+
     public bool IsFilled { get; private set; }
 
-    // Fitur sakti Unity: Berjalan otomatis saat kamu ubah nilai di Inspector
+    // =========================================================
+    // ON VALIDATE
+    // =========================================================
+
     private void OnValidate()
     {
-        if (spriteRenderer == null) return;
+        UpdateGoalSprite();
+    }
 
-        // Otomatis ganti gambar sesuai tipe yang dipilih
+    // =========================================================
+    // UPDATE SPRITE
+    // =========================================================
+
+    private void UpdateGoalSprite()
+    {
+        if (spriteRenderer == null)
+            return;
+
         switch (syaratTipe)
         {
             case BodyCell.TipeBlok.Polos:
-                spriteRenderer.sprite = gambarPolos;
+
+                spriteRenderer.sprite =
+                    gambarPolos;
+
                 break;
+
             case BodyCell.TipeBlok.Motif:
-                spriteRenderer.sprite = gambarMotif;
+
+                spriteRenderer.sprite =
+                    gambarMotif;
+
                 break;
+
             case BodyCell.TipeBlok.Kepala:
-                spriteRenderer.sprite = gambarKepala;
+
+                spriteRenderer.sprite =
+                    gambarKepala;
+
                 break;
         }
     }
 
+    // =========================================================
+    // START
+    // =========================================================
+
     private void Start()
     {
         if (gridManager == null)
-            gridManager = FindFirstObjectByType<GridManager>();
+        {
+            gridManager =
+                FindFirstObjectByType<GridManager>();
+        }
 
-        gridPosition = gridManager.WorldToGrid(transform.position);
-        transform.position = gridManager.GridToWorld(gridPosition);
+        if (gridManager == null)
+        {
+            Debug.LogError(
+                $"{name}: GridManager tidak ditemukan."
+            );
+
+            return;
+        }
+
+        gridPosition =
+            gridManager.WorldToGrid(
+                transform.position
+            );
+
+        transform.position =
+            gridManager.GridToWorld(
+                gridPosition
+            );
+
+        UpdateGoalSprite();
     }
+
+    // =========================================================
+    // UPDATE
+    // =========================================================
 
     private void Update()
     {
         CheckForBodyCell();
     }
 
+    // =========================================================
+    // CHECK BODY CELL
+    // =========================================================
+
     private void CheckForBodyCell()
     {
         IsFilled = false;
-        
-        BodyCell[] allCells = FindObjectsByType<BodyCell>(FindObjectsSortMode.None);
-        
+
+        BodyCell[] allCells =
+            FindObjectsByType<BodyCell>(
+                FindObjectsSortMode.None
+            );
+
         foreach (BodyCell cell in allCells)
         {
-            if (cell.GridPosition == gridPosition && cell.tipeBlok == syaratTipe)
+            if (cell == null)
+                continue;
+
+            // =================================================
+            // CEK POSISI
+            // =================================================
+
+            if (cell.GridPosition != gridPosition)
+                continue;
+
+            // =================================================
+            // CEK TIPE
+            // =================================================
+
+            if (cell.TipeBlokSaatIni != syaratTipe)
+                continue;
+
+            // =================================================
+            // BERHASIL
+            // =================================================
+
+            IsFilled = true;
+
+            if (AudioManager.Instance != null)
             {
-                IsFilled = true;
-                break; 
+                AudioManager.Instance.PlaySFX(
+                    "Input Success"
+                );
             }
+
+            break;
         }
     }
 }
+

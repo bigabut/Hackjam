@@ -81,11 +81,13 @@ public class PressurePlate : MonoBehaviour
         if (someoneIsOnPlate && !isDoorOpen)
         {
             OpenDoor();
+            AudioManager.Instance.PlaySFX("Pressure Plate");
         }
         // Tutup pintu kalau nggak ada yang nginjak (dan settingnya boleh nutup)
         else if (!someoneIsOnPlate && isDoorOpen && !stayOpen)
         {
             CloseDoor();
+            AudioManager.Instance.PlaySFX("Pressure Plate");
         }
     }
 
