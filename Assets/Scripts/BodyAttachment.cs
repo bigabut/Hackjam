@@ -13,126 +13,65 @@ public class BodyAttachment : MonoBehaviour
 
     private void RefreshAttachmentUI()
     {
-        BodyCell[] allCells =
-            FindObjectsByType<BodyCell>(
-                FindObjectsSortMode.None
-            );
+        BodyCell[] allCells = FindObjectsByType<BodyCell>(FindObjectsSortMode.None);
 
-        // Semua cell yang sudah menjadi bagian Player
-        // boleh melakukan attachment detection.
+        // 1. Matikan semua UI ceklis di SEMUA blok (reset)
         foreach (BodyCell cell in allCells)
         {
-            if (!IsAttachedCell(cell))
-                continue;
+            cell.HideAllSides();
+        }
 
+        // 2. Cek deteksi dari blok yang menempel ke Player
+        foreach (BodyCell cell in allCells)
+        {
+            if (!IsAttachedCell(cell)) continue;
             CheckCellSides(cell);
         }
     }
 
     private bool IsAttachedCell(BodyCell cell)
     {
-        if (body == null)
-            return false;
-
-        return cell.transform.IsChildOf(
-            body.transform
-        );
+        if (body == null) return false;
+        return cell.transform.IsChildOf(body.transform);
     }
 
     private void CheckCellSides(BodyCell cell)
     {
-        // Reset UI
-        cell.HideAllSides();
+        Vector2Int cellPosition = cell.GridPosition;
 
-        Vector2Int cellPosition =
-            gridManager.WorldToGrid(
-                cell.transform.position
-            );
-
-        CheckDirection(
-            cell,
-            cellPosition,
-            Vector2Int.up
-        );
-
-        CheckDirection(
-            cell,
-            cellPosition,
-            Vector2Int.down
-        );
-
-        CheckDirection(
-            cell,
-            cellPosition,
-            Vector2Int.left
-        );
-
-        CheckDirection(
-            cell,
-            cellPosition,
-            Vector2Int.right
-        );
+        CheckDirection(cell, cellPosition, Vector2Int.up);
+        CheckDirection(cell, cellPosition, Vector2Int.down);
+        CheckDirection(cell, cellPosition, Vector2Int.left);
+        CheckDirection(cell, cellPosition, Vector2Int.right);
     }
 
-    private void CheckDirection(
-        BodyCell attachedCell,
-        Vector2Int cellPosition,
-        Vector2Int direction
-    )
+    private void CheckDirection(BodyCell attachedCell, Vector2Int cellPosition, Vector2Int direction)
     {
-        Vector2Int targetPosition =
-            cellPosition + direction;
+        Vector2Int targetPosition = cellPosition + direction;
+        BodyCell targetCell = FindDetachedBodyCell(targetPosition);
 
-        BodyCell targetCell =
-            FindDetachedBodyCell(
-                targetPosition
-            );
+        if (targetCell == null) return;
 
-        if (targetCell == null)
-            return;
+        // Aktifkan ceklis di blok Player
+        attachedCell.SetSideAvailable(direction, true, targetCell);
 
-        Debug.Log(
-            $"[{attachedCell.name}] menemukan " +
-            $"[{targetCell.name}] di {direction}"
-        );
-
-        attachedCell.SetSideAvailable(
-            direction,
-            true,
-            targetCell
-        );
+        // Aktifkan juga ceklis di blok sasaran yang lepas biar kamu bisa klik dari sana!
+        targetCell.SetSideAvailable(-direction, true, attachedCell);
     }
 
-    private BodyCell FindDetachedBodyCell(
-        Vector2Int targetPosition
-    )
+    private BodyCell FindDetachedBodyCell(Vector2Int targetPosition)
     {
-        BodyCell[] allCells =
-            FindObjectsByType<BodyCell>(
-                FindObjectsSortMode.None
-            );
-
+        BodyCell[] allCells = FindObjectsByType<BodyCell>(FindObjectsSortMode.None);
         foreach (BodyCell cell in allCells)
         {
-            // Head tidak pernah menjadi target
-            if (cell.IsHead)
-                continue;
-
-            // Sudah menjadi bagian tubuh
-            if (IsAttachedCell(cell))
-                continue;
-
-            Vector2Int cellPosition =
-                gridManager.WorldToGrid(
-                    cell.transform.position
-                );
-
-            if (cellPosition == targetPosition)
+            if (cell.IsHead) continue;
+            if (IsAttachedCell(cell)) continue;
+            
+            if (cell.GridPosition == targetPosition)
             {
                 return cell;
             }
         }
-
         return null;
     }
 }
