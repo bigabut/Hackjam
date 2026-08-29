@@ -127,63 +127,50 @@ public class PressurePlate : MonoBehaviour
     // CHECK PLAYER
     // =========================================================
 
+    // =========================================================
+    // CHECK PLAYER
+    // =========================================================
+
     private void CheckForPlayer()
     {
         if (gridManager == null)
             return;
 
-        GridBodyMovement[] bodies =
-            FindObjectsByType<GridBodyMovement>(
+        // KUNCI PERBAIKAN: Cari semua BodyCell yang ada di arena, 
+        // baik yang menempel di Player maupun yang sudah terpotong.
+        BodyCell[] allCells =
+            FindObjectsByType<BodyCell>(
                 FindObjectsSortMode.None
             );
 
         bool someoneIsOnPlate = false;
 
-        foreach (GridBodyMovement body
-                 in bodies)
+        foreach (BodyCell cell in allCells)
         {
-            if (body == null)
+            if (cell == null)
                 continue;
 
-            BodyCell[] bodyCells =
-                body.GetComponentsInChildren<BodyCell>(
-                    true
-                );
+            Vector2Int cellPosition =
+                cell.GridPosition;
 
-            foreach (BodyCell cell
-                     in bodyCells)
+            // -------------------------------------------------
+            // FALLBACK
+            // -------------------------------------------------
+            if (cellPosition !=
+                plateGridPosition)
             {
-                if (cell == null)
-                    continue;
-
-                Vector2Int cellPosition =
-                    cell.GridPosition;
-
-                // -------------------------------------------------
-                // FALLBACK
-                // -------------------------------------------------
-                // Kalau GridPosition belum update,
-                // hitung langsung dari world position.
-
-                if (cellPosition !=
-                    plateGridPosition)
-                {
-                    cellPosition =
-                        gridManager.WorldToGrid(
-                            cell.transform.position
-                        );
-                }
-
-                if (cellPosition ==
-                    plateGridPosition)
-                {
-                    someoneIsOnPlate = true;
-                    break;
-                }
+                cellPosition =
+                    gridManager.WorldToGrid(
+                        cell.transform.position
+                    );
             }
 
-            if (someoneIsOnPlate)
+            if (cellPosition ==
+                plateGridPosition)
+            {
+                someoneIsOnPlate = true;
                 break;
+            }
         }
 
         // =====================================================
