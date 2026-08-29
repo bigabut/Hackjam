@@ -1481,14 +1481,14 @@ RectTransform:
   m_GameObject: {fileID: 359552923}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 6.0375004, y: 3.4571998, z: 1}
-  m_ConstrainProportionsScale: 1
+  m_LocalScale: {x: 9, y: 3.4571998, z: 1}
+  m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 5603278}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -624, y: 324}
+  m_AnchoredPosition: {x: -473, y: 326}
   m_SizeDelta: {x: 100, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &359552925
@@ -2832,6 +2832,7 @@ GameObject:
   - component: {fileID: 803764308}
   - component: {fileID: 803764307}
   - component: {fileID: 803764306}
+  - component: {fileID: 803764309}
   m_Layer: 0
   m_Name: Main Camera
   m_TagString: MainCamera
@@ -2913,6 +2914,50 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &803764309
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 803764305}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a79441f348de89743a2939f4d699eac1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Unity.RenderPipelines.Universal.Runtime::UnityEngine.Rendering.Universal.UniversalAdditionalCameraData
+  m_RenderShadows: 1
+  m_RequiresDepthTextureOption: 2
+  m_RequiresOpaqueTextureOption: 2
+  m_CameraType: 0
+  m_Cameras: []
+  m_RendererIndex: -1
+  m_VolumeLayerMask:
+    serializedVersion: 2
+    m_Bits: 1
+  m_VolumeTrigger: {fileID: 0}
+  m_VolumeFrameworkUpdateModeOption: 2
+  m_RenderPostProcessing: 0
+  m_Antialiasing: 0
+  m_AntialiasingQuality: 2
+  m_StopNaN: 0
+  m_Dithering: 0
+  m_ClearDepth: 1
+  m_AllowXRRendering: 1
+  m_AllowHDROutput: 1
+  m_UseScreenCoordOverride: 0
+  m_ScreenSizeOverride: {x: 0, y: 0, z: 0, w: 0}
+  m_ScreenCoordScaleBias: {x: 0, y: 0, z: 0, w: 0}
+  m_RequiresDepthTexture: 0
+  m_RequiresColorTexture: 0
+  m_TaaSettings:
+    m_Quality: 3
+    m_FrameInfluence: 0.1
+    m_JitterScale: 1
+    m_MipBias: 0
+    m_VarianceClampScale: 0.9
+    m_ContrastAdaptiveSharpening: 0
+  m_Version: 2
 --- !u!1 &919747493
 GameObject:
   m_ObjectHideFlags: 0
@@ -4653,7 +4698,7 @@ MonoBehaviour:
   - {fileID: -7210470214081766192, guid: 0f7598e0abad3e84fbfe536dc2ffc27d, type: 3}
   - {fileID: -1805463728544329446, guid: de6633d845e74af45bd3e15afbef18ad, type: 3}
   - {fileID: -1758170534792519715, guid: d01dc9fd1d5a3e049bc8c37a3978d01f, type: 3}
-  - {fileID: 21300000, guid: f15bdbce52c1dda4b8cf33ddac80a5a9, type: 3}
+  - {fileID: 353116754613221587, guid: 52e5204cffb48c646bbe17efc2e0f659, type: 3}
   - {fileID: 747492405262832995, guid: 632b6976bf2ea8945a3d09a236f0d72a, type: 3}
   - {fileID: 7837628249499518303, guid: dcfee7518cf4beb4ba43352aec40b413, type: 3}
   - {fileID: -2183872611098917974, guid: 46eaafcfc75f19147abf84b51d9d17ff, type: 3}
